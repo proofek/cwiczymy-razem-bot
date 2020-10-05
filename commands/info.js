@@ -1,4 +1,4 @@
-module.exports = (message) => {
+module.exports = (RichEmbed, message) => {
 	const reply = new RichEmbed()
             .setTitle("O zabawie")
             .setColor(0xFF0000)
