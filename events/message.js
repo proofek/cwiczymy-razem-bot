@@ -6,4 +6,8 @@ module.exports = (client, message) => {
     return ping(message)
   }
 
+  if (message.content === "!info") {
+    return info(message)
+  }
+
 }
