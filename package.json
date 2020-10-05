@@ -1,0 +1,20 @@
+{
+  "name": "cwiczymy-razem-bot",
+  "version": "1.0.0",
+  "description": "Bot discorda do rejestrowania postępów w zabawie Ćwiczymy Razem z Bazokiem",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "Sebastian Marek",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^12.3.1",
+    "dotenv": "^8.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}
