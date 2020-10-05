@@ -3,8 +3,10 @@ Wymaganie techniczne
 ====================
 * Node.js (zbudowano na wersji 12.18.4)
 * discord.js (zbudowano na wersji 12.3.1)
+* Git (zbudowano na wersji 2.28.0)
 * Dostęp do github
 * Dostęp do Heroku
+* Heroku CLI
 
 Stworzenie Bota
 ===============
@@ -42,9 +44,22 @@ Umieszczenie bota na serwerze Heroku
 2. Dodaj nową aplikację - kliknij _New_ > _Create New App_
    * nazwij ją 'cwiczymy-razem-bot' i wybierz odpowiedni region (najprawdopodobniej Europę)
    * kliknij _Create app_
+3. Zaloguj się do heroku z lini poleceń używając komendy `heroku login`
+4. Dodaj zdalny serwer heroku do gita używając komendy `heroku git:remote -a cwiczymy-razem-bot`
+5. Wyślij zmiany na serwer używając komendy `git push heroku main`
+6. Wyłącz tryb 'web' i włącz tryb 'worker' w zakładce 'Resources'
 
+Aktualizacja wersji bota na serwerze Heroku
+-------------------------------------------
 
+Po wprowadzeniu zmian do kodu, należy je zapisać w Git oraz wysłać zmiany na serwer github oraz heroku.
 
+```
+$ git add .
+$ git commit -am "Opis zmian w kodzie"
+$ git push origin main
+$ git push heroku main
+```
 
 Referencje
 ==========
