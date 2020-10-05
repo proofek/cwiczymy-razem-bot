@@ -1,3 +1,3 @@
 module.exports = (message) => {
-	message.reply("Pong!")
+	message.author.send("Pong! :guitar: :guitar: :guitar: w dłoń") 
 }
