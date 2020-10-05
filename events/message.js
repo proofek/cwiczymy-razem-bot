@@ -1,4 +1,5 @@
 const ping = require("../commands/ping")
+const info = require("../commands/info")
 
 module.exports = (client, message) => {
 
