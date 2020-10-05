@@ -48,6 +48,12 @@ Umieszczenie bota na serwerze Heroku
 4. Dodaj zdalny serwer heroku do gita używając komendy `heroku git:remote -a cwiczymy-razem-bot`
 5. Wyślij zmiany na serwer używając komendy `git push heroku main`
 6. Wyłącz tryb 'web' i włącz tryb 'worker' w zakładce 'Resources'
+7. Ustaw zmienną środowiskową z wartością tokena (Token należy pobrać z [portalu Discorda](https://discordapp.com/developers/applications/) - zakładka Bot > TOKEN > przycisk _Copy_)
+```
+heroku config:set BOT_TOKEN=TWOJ_TOKEN
+```
+8. Zrestartuj aplikację używając komendy `heroku restart --app cwiczymy-razem-bot`
+9. Zobacz logi, aby upewnić się, że aplikacja uruchomiła się poprawnie używając komendy `heroku logs --tail`
 
 Aktualizacja wersji bota na serwerze Heroku
 -------------------------------------------
