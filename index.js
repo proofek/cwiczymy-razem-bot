@@ -5,7 +5,9 @@ const admin = require("firebase-admin")
 const serviceAccount = require("./bazok-dev-service-account.json")
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(
+  	JSON.parse(Buffer.from(process.env.FIREBASE_SERVICEACCOUNT_BASE64, 'base64').toString('ascii'))
+  )
 })
 
 let db = admin.firestore();
