@@ -2,7 +2,6 @@ require("dotenv").config()
 
 const firebase = require("firebase/app")
 const admin = require("firebase-admin")
-const serviceAccount = require("./bazok-dev-service-account.json")
 
 admin.initializeApp({
   credential: admin.credential.cert(
