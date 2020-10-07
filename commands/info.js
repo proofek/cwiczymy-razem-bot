@@ -1,15 +1,10 @@
-module.exports = (RichEmbed, message) => {
-	const reply = new RichEmbed()
-            .setTitle("O zabawie")
-            .setColor(0xFF0000)
-            .setDescription("Ćwiczymy razem to zabawa utworzona i działająca w grupie patronów Bazoka na platformie Discord. Ćwiczysz, raportujesz i dostajesz punkty. Celem jest zmotywowanie Ciebie do częstszej i regularnej gry na instrumencie.")
-            .addFields(
-				{
-					name: 'Za co przydzielane są punkty?',
-					value: 'Punkty możesz zdobyć na trzy sposoby:' },
-				{ name: '\u200B', value: '\u200B' },
+module.exports = (message, args) => {
 
-			);
-
-	message.author.send(reply) 
+		message.author.send(":guitar: **__O zabawie__** :guitar:\nĆwiczymy razem to zabawa utworzona i działająca w grupie patronów Bazoka na platformie Discord. Ćwiczysz, raportujesz i dostajesz punkty. Celem jest zmotywowanie Ciebie do częstszej i regularnej gry na instrumencie.\n\n**__Za co przydzielane są punkty?__**\nPunkty możesz zdobyć na trzy sposoby:\n:point_right:  :one: Najbardziej fundamentalnym sposobem jest raportowanie swoich ćwiczeń. __Ćwiczysz, składasz raport a my przydzielamy Ci punkty.__ Będziesz mógł uzyskać dziennie po jednym punkcie dla każdego z trzech filarów-Techniki, Słuchu oraz Teorii. Możesz również je pomnożyć, dodając do raportu __zdjęcie, film lub nagranie__ dokumentujące Twoją sesje z instrumentem.\n:point_right:  :two: Zagraj __Riff Tygodnia__ i umieść go w raporcie. Jeżeli zaliczysz wyzwanie, otrzymasz +5 punktów do techniki.\n:point_right:  :three: Podejmij się wyzwania i wykonaj je. Uzyskasz nie tylko dodatkowe punkty, ale również odznakę.")
+		message.author.send("_ _")
+		message.author.send("**__Jak raportować?__**\nRaport należy składać w specjalnym kanale na Discord #cwiczymy-razem-raporty. Jest on podsumowaniem Twoich ćwiczeń. W poście możesz umieścić nagrania, filmy i zdjęcia. Dodajesz tam także zaliczenia zadań. __Pamiętaj!__ Możesz złożyć tylko jeden raport dziennie. Dbaj o czytelność raportu.\n\n__Wzór raportu__:\nCzas: 0:00\n1) Technika:\n2) Słuch:\n3) Teoria:\n4) Zadania: (jeżeli je umieszczasz)")
+		message.author.send("_ _")
+		message.author.send("**__Co to 'Tygodniowy Riff'?__**\nJest to seria filmików nagrywana przez Bazoka dla Patronów. Możesz w niej znaleźć autorskie riffy zagrane w różnych stylistykach gitarowych. Dodatkowo do wyboru są 3 poziomy trudności dla każdego stopnia zaawansowania. Seria prowadzona jest z cotygodniową częstotliwością.\n\n**__Jak dołączyć?__**\nNapisz do nas na kanale #cwiczymyrazem.\n\n**__Zanim dołączysz__**\nMiej na uwadzę fakt, że punkty i odnzaki __dodawane są ręcznie__. Dbaj o czytelność składanych raportów i trzymaj się wyznaczonego wzoru. Na kanale #ćwiczymyrazemraporty można pisać tylko i wyłącznie raporty. Od komentarzy jest kanał #ćwiczymyrazem. W razie wątpliwości zadawaj pytania na tym kanale.\nMiłej zabawy i  :guitar::guitar::guitar:  w dłoń!")
+		message.author.send("_ _")
+		message.author.send(":information_source: Oryginalna aplikacja znajduje się pod adresem https://bazok-98f32.web.app/")
 }
