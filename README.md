@@ -52,8 +52,13 @@ Umieszczenie bota na serwerze Heroku
 ```
 heroku config:set BOT_TOKEN=TWOJ_TOKEN
 ```
-8. Zrestartuj aplikację używając komendy `heroku restart --app cwiczymy-razem-bot`
-9. Zobacz logi, aby upewnić się, że aplikacja uruchomiła się poprawnie używając komendy `heroku logs --tail`
+8. Wygeneruj konfigurację firebase serviceAccount używając komendy `npm run base64serviceAccount`
+9. Ustaw zmienną środowiskową z wartością wygenerowaną przez skrypt powyżej
+```
+heroku config:set FIREBASE_SERVICEACCOUNT_BASE64=SERVICEACCOUNT_CONFIG
+```
+9. Zrestartuj aplikację używając komendy `heroku restart --app cwiczymy-razem-bot`
+10. Zobacz logi, aby upewnić się, że aplikacja uruchomiła się poprawnie używając komendy `heroku logs --tail`
 
 Aktualizacja wersji bota na serwerze Heroku
 -------------------------------------------
