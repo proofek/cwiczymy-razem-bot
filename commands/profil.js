@@ -11,7 +11,7 @@ module.exports = (db, message, args) => {
   }
 
   if (!targetUser) {
-    return message.reply(`Hmm... mamy mały problem. Nie wiemy kogo statystyki chcesz zobaczyć!`)
+    return message.reply(`Hmm... mamy mały problem. Nie wiemy jaki profil chcesz zobaczyć!`)
   }
 
   User.findUser(db, targetUser)
@@ -25,7 +25,7 @@ module.exports = (db, message, args) => {
         
         const user = new User(userFound);
         embededMessage = chatMessage.createStatusEmbedMessage(user);
-        message.reply({ embed: embededMessage });
+        return message.reply({ embed: embededMessage });
       })
     });
 

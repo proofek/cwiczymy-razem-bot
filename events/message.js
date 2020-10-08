@@ -1,8 +1,9 @@
 const ping = require("../commands/ping")
 const info = require("../commands/info")
-const register = require("../commands/register")
+const pomoc = require("../commands/pomoc")
+const nowyprofil = require("../commands/nowy-profil")
 const raport = require("../commands/raport")
-const status = require("../commands/status")
+const profil = require("../commands/profil")
 
 module.exports = (client, db, admin, message) => {
 
@@ -25,15 +26,19 @@ console.log(util.inspect(command, {showHidden: false, depth: null}))*/
     return info(message, args)
   }
 
-  if (command === "register") {
-    return register(db, message, args)
+  if (command === "pomoc") {
+    return pomoc(message, args)
+  }
+
+  if (command === "nowy-profil") {
+    return nowyprofil(db, message, args)
   }
 
   if (command === "raport") {
     return raport(db, admin, message, args)
   }
 
-  if (command === "status") {
-    return status(db, message, args)
+  if (command === "profil") {
+    return profil(db, message, args)
   }
 }

@@ -86,7 +86,7 @@ module.exports = (db, admin, message, args) => {
         User.checkCurrentUserReport(db, user.id, reportDate).then(function(currentReport) {
           if (!currentReport.exists) {
             user.addNewReport(db, reportArgs).then(function(report) {
-                message.reply(`Nieźle  :boar:  ! Dziękujemy za raport na dzień '${reportDate}'`);
+                return message.reply(`Nieźle  :boar:  ! Dziękujemy za raport na dzień '${reportDate}'`);
             }).then(function() {
               user.updateStats(db, admin, reportArgs).then(function(writeResult) {
                 user.fetchUser(db).then(function(userDoc) {
@@ -99,7 +99,7 @@ module.exports = (db, admin, message, args) => {
               });
             });
           } else {
-            message.reply(`Otrzymaliśmy już od Ciebie raport na dzień '${reportDate}'. Pamiętaj, że możesz wysyłać tylko jeden raport dziennie.`);
+            return message.reply(`Otrzymaliśmy już od Ciebie raport na dzień '${reportDate}'. Pamiętaj, że możesz wysyłać tylko jeden raport dziennie.`);
           }
         });
       })
