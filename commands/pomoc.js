@@ -12,12 +12,20 @@ __Oto dostępne komendy:__
 
 - **!profil _[nazwa-użytkownika]_** - wyświetla profil gracza *nazwa-użytkownika*. W przypadku pominięcia *nazwa-użytkownika*, wyświetlony zostaje profil użytkownika wydającego komendę
 
-- **!raport _data=YYYY-MM-DD_ _czas=HH:MM_ _[technika=HH:MM]_ _[sluch=HH:MM]_ _[teoria=HH:MM]_** - dodaje raport dla podanej daty
+- **!raport** - dodaje raport z ćwiczenia w formacie jak niżej
 
-  - _data_ - data wykonania ćwiczenia. Parametr wymagany w formacie _YYYY-MM-DD_, czyli 2020-10-01. Raporty można składać tylko do 7 dni wstecz
-  - _czas_ - ilość czasu poświecona na wszystkie ćwiczenia danego dnia. Parametr wymagany w formacie _HH:MM_, czyli 00:30 to 30 minut, 05:15 to 5 godzin i 15 minut.
-  - _technika_ - ilość czasu poświecona na ćwiczenie techniki danego dnia. Parametr opcjonalny w formacie _HH:MM_, czyli 00:30 to 30 minut, 01:15 to 1 godzina i 15 minut.
-  - _sluch_ - ilość czasu poświecona na ćwiczenie słuchu danego dnia. Parametr opcjonalny w formacie _HH:MM_, czyli 00:30 to 30 minut, 01:15 to 1 godzina i 15 minut.
-  - _teoria_ - ilość czasu poświecona na ćwiczenie teorii danego dnia. Parametr opcjonalny w formacie _HH:MM_, czyli 00:30 to 30 minut, 01:15 to 1 godzina i 15 minut.`;
+    -----------------------------
+	Data: 2020-10-01
+	Czas ćwiczeń: 1:00h
+    1. Technika: opis ćwiczenia
+    2. Słuch: opis ćwiczenia
+    3. Teoria: opis ćwiczenia
+    -----------------------------
+
+  - Data wykonania ćwiczenia jest opcjonalna (w przypadku braku używana jest aktualna data). Wymagany format to _YYYY-MM-DD_, czyli np. 2020-10-01. Raporty można składać tylko do 7 dni wstecz
+  - Czas ćwiczeń - ilość czasu poświecona na wszystkie ćwiczenia danego dnia. Parametr wymagany w formacie _HH:MM_, czyli 00:30 to 30 minut, 05:15 to 5 godzin i 15 minut.
+  - Technika - za ćwiczenie techniki danego dnia przyznawany jest 1 punkt.
+  - Słuch - za ćwiczenie słuchu danego dnia przyznawany jest 1 punkt.
+  - Teoria - za ćwiczenie teorii danego dnia przyznawany jest 1 punkt.`
 	message.author.send(msgText);
 }

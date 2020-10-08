@@ -7,10 +7,16 @@ const profil = require("../commands/profil")
 
 module.exports = (client, db, admin, message) => {
 
+  let command = '';
+  let args = []
   if (!message.content.startsWith("!") || message.author.bot) return;
 
-  const args = message.content.slice(1).trim().split(/ +/);
-  const command = args.shift().toLowerCase();
+  args = message.content.slice(1).trim().split(/[\r\n]+/);
+  command = args.shift().toLowerCase().trim();
+
+  args2 = command.split(/ +/)
+  command = args2.shift().toLowerCase().trim();
+  args = args2.concat(args)
 
 /*const util = require('util')
 

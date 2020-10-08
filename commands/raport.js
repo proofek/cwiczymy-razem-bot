@@ -1,81 +1,81 @@
 module.exports = (db, admin, message, args) => {
 
   const cf = require("../common_functions.js")
+  const dateformat = require('dateformat');
   const User = require("../user.js")
+  const Report = require("../report.js")
   const discordMessage = require("../discordMessage")
   const chatMessage = new discordMessage();
 
   const username = message.author.username;
-  var InvalidDateException = {};
-  var ReportTooOldException = {};
-  var ReportTooOldException = {};
-  var InvalidTimeException = {};
 
   if (!username) {
     return message.reply(`Hmm... mamy mały problem. Nie wiemy kim jesteś!`)
   }
 
-  const allowedArgs =['data', 'czas', 'technika', 'sluch', 'teoria']
-  const reportArgs = [];
+  let reportDate = '';
+  let reportTime = '';
+  let technicalPoints = 0;
+  let listeningPoints = 0;
+  let theoryPoints = 0;
 
-  try {
+  for (let line of args) {
 
-    args.forEach(function(arg) {
+      if (!reportDate) {
 
-      argParts = arg.split("=");
+        try {
 
-      // Akceptuj tylko argumenty z jednym znakiem =
-      if (argParts.length === 2) {
+          reportDate = parseReportDate(line)  
 
-        // Akceptuj tylko dozwolone argumenty
-        if (allowedArgs.includes(argParts[0])) {
+        } catch (e) {
 
-          if (reportArgs.some(argObj => argObj.name === argParts[0])) {
-            // Pomijaj zduplikowane argumenty
-            return;
+          if (e == 'InvalidDateException') {
+            return message.reply(`Podałeś nieprawidłową datę. Pamiętaj, że data raportu powinna być w formacie YYYY-MM-DD, np. 2020-09-28.`);
           }
 
-          switch(argParts[0]) {
-              case "data":
-                argObj = parseData(argParts[1])
-                break;
-              case "czas":
-                argObj = parseCzas(argParts[1])
-                break;
-              case "technika":
-                 argObj = parseTechnika(argParts[1])
-                break;
-              case "sluch":
-                 argObj = parseSluch(argParts[1])
-                break;
-              case "teoria":
-                 argObj = parseTeoria(argParts[1])
-                break;
-              default:
-                // code block
+          if (e == 'ReportTooOldException') {
+            return message.reply(`Podałeś nieprawidłową datę. Pamiętaj, że możesz nie możesz wysyłać raportów starszych niż 7 dni.`);
           }
-
-          reportArgs.push(argObj)
         }
       }
-    });
 
-  } catch (e) {
-    
-    if (e == InvalidDateException) {
-      return message.reply(`Podałeś nieprawidłową datę. Pamiętaj, że data raportu powinna być w formacie YYYY-MM-DD, np. 2020-09-28.`);
-    }
+      if (!reportTime) {
+        try {
 
-    if (e == ReportTooOldException) {
-      return message.reply(`Podałeś nieprawidłową datę. Pamiętaj, że możesz nie możesz wysyłać raportów starszych niż 7 dni.`);
-    }
+          reportTime = parseReportTime(line)  
 
-    if (e == InvalidTimeException) {
-      return message.reply(`Podałeś nieprawidłowy czas. Pamiętaj, że czas ćwiczeń powinien być w formacie HH:MM, np. 01:30 dla 1 godziny i 30 minut`);
-    }
+        } catch (e) {
+
+          if (e == 'InvalidTimeException') {
+            return message.reply(`Podałeś nieprawidłowy czas. Pamiętaj, że czas ćwiczeń powinien być w formacie HH:MM, np. 01:30 dla 1 godziny i 30 minut`);
+          }
+        }
+      }
+
+      if (technicalPoints == 0) {
+        technicalPoints = parseTechnicalPoints(line);
+      }
+
+      if (listeningPoints == 0) {
+        listeningPoints = parseListeningPoints(line);
+      }
+
+      if (theoryPoints == 0) {
+        theoryPoints = parseTheoryPoints(line);
+      }
+  };
+
+  if (!reportTime) {
+    return message.reply(`Hey  :boar:  ! Ale musisz nam powiedzieć jak długo ćwiczyłeś. Dodaj do raportu na przykład taką linię: 'Czas 1:30h'`);
   }
 
-  const reportDate = cf.getStatValueFromArgs(reportArgs, "data")
+  reportDate = dateformat((!reportDate) ? new Date() : reportDate, 'isoDate');
+
+  const newReport = new Report();
+  newReport.czas = reportTime;
+  newReport.technika = technicalPoints;
+  newReport.sluch = listeningPoints;
+  newReport.teoria = theoryPoints;
 
   User.findUser(db, username)
     .then(function(userQuery) {
@@ -85,10 +85,14 @@ module.exports = (db, admin, message, args) => {
         const user = new User(userFound);
         User.checkCurrentUserReport(db, user.id, reportDate).then(function(currentReport) {
           if (!currentReport.exists) {
-            user.addNewReport(db, reportArgs).then(function(report) {
-                return message.reply(`Nieźle  :boar:  ! Dziękujemy za raport na dzień '${reportDate}'`);
+            user.addNewReport(db, reportDate, newReport).then(function(report) {
+              const replyMessage = `Nieźle  :boar:  ! Dziękujemy za raport na dzień '${reportDate}'
+Czas spędzony na ćwiczeniach: ${reportTime}h
+Przyznane punkty: technika ${technicalPoints}, słuch ${listeningPoints}, teoria ${theoryPoints}`
+
+              return message.reply(replyMessage)
             }).then(function() {
-              user.updateStats(db, admin, reportArgs).then(function(writeResult) {
+              user.updateStats(db, admin, newReport).then(function(writeResult) {
                 user.fetchUser(db).then(function(userDoc) {
                   const updatedUser = new User(userDoc);
                   if (updatedUser.level > user.level) {
@@ -106,88 +110,76 @@ module.exports = (db, admin, message, args) => {
     });
 }
 
-// Walidacja i parsowanie daty
-function parseData(value) {
-          
-  const nowDate = new Date();
-  nowDate.setHours(0);
-  nowDate.setMinutes(0);
-  nowDate.setSeconds(0, 0);
+function parseReportDate(line) {
 
-  const userDate = value.split('-');
-  const reportDate = new Date(userDate[0], userDate[1] - 1, userDate[2]);
+  let reportDate = '';
+  const regex1 = /data\s*[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ-]*\s*[:=]?\s*/i;
+  const dateFound = line.match(regex1);
 
-  if (!reportDate instanceof Date || isNaN(reportDate)) {
-    throw InvalidDateException;      
+  if (dateFound) {
+    const regex = /data\s*[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ-]*\s*[:=]?\s*(20\d\d)\-(0?[1-9]|1[012])\-([12][0-9]|3[01]|0?[1-9])/i;
+    const found = line.match(regex);
+
+    if (found) {
+      reportDate = new Date(found[1], found[2] - 1, found[3]);
+    }
+
+    if (!(reportDate instanceof Date) || isNaN(reportDate)) {
+      throw 'InvalidDateException';
+    }
+
+    const diffTime = Math.abs(new Date() - reportDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays > 7) {
+      throw 'ReportTooOldException';
+    }
   }
 
-  const diffTime = Math.abs(nowDate - reportDate);
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  if (diffDays > 7) {
-    throw ReportTooOldException;
-  }
-
-  const argObj = new Object()
-  argObj.name = "data"
-  argObj.value = value
-
-  return argObj;
+  return reportDate;
 }
 
-// Walidacja i parsowanie czasu
-function parseCzas(value) {
+function parseReportTime(line) {
 
-  const userCzas = value.split(':');
-  if (userCzas.length !== 2 || userCzas[0] > 12 || userCzas[1] > 59) {
-    throw InvalidTimeException;
+  let reportTime = '';
+  const regex1 = /czas\s*[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ-]*\s*[:=]?\s*/i;
+  const timeFound = line.match(regex1);
+
+  if (timeFound) {
+    const regex = /czas\s*[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ-]*\s*[:=]?\s*(\d+([\.:][0-5][0-9])?)/i;
+    const found = line.match(regex);
+
+    if (found) {
+      reportTime = found[1];
+    }
+
+    if (!reportTime) {
+      throw 'InvalidTimeException';
+    }
   }
 
-  const argObj = new Object()
-  argObj.name = "czas"
-  argObj.value = value
-  argObj.decValue = (+userCzas[0]*60 + +userCzas[1])/60;
-
-  return argObj;
+  return reportTime;
 }
 
-function parseTechnika(value) {
-  const userTechnika = value.split(':');
-  if (userTechnika.length !== 2 || userTechnika[0] > 12 || userTechnika[1] > 59) {
-    throw InvalidTimeException;
-  }
+function parseTechnicalPoints(line) {
 
-  const argObj = new Object()
-  argObj.name = "technika"
-  argObj.value = value
-  argObj.decValue = (+userTechnika[0]*60 + +userTechnika[1])/60;;
+    const regex = /technika/i;
+    const found = line.match(regex);
 
-  return argObj;
+    return (found) ? 1 : 0;
 }
 
-function parseSluch(value) {
-  const userSluch = value.split(':');
-  if (userSluch.length !== 2 || userSluch[0] > 12 || userSluch[1] > 59) {
-    throw InvalidTimeException;
-  }
+function parseListeningPoints(line) {
 
-  const argObj = new Object()
-  argObj.name = "sluch"
-  argObj.value = value
-  argObj.decValue = (+userSluch[0]*60 + +userSluch[1])/60;;
+    const regex = /sluch|słuch/i;
+    const found = line.match(regex);
 
-  return argObj;
+    return (found) ? 1 : 0;
 }
 
-function parseTeoria(value) {
-  const userTeoria = value.split(':');
-  if (userTeoria.length !== 2 || userTeoria[0] > 12 || userTeoria[1] > 59) {
-    throw InvalidTimeException;
-  }
+function parseTheoryPoints(line) {
 
-  const argObj = new Object()
-  argObj.name = "teoria"
-  argObj.value = value
-  argObj.decValue = (+userTeoria[0]*60 + +userTeoria[1])/60;;
+    const regex = /teoria/i;
+    const found = line.match(regex);
 
-  return argObj;
+    return (found) ? 1 : 0;
 }

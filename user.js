@@ -60,24 +60,22 @@ class User {
 	  return rank;
 	}
 
-	async addNewReport(db, reportStats) {
+	async addNewReport(db, reportDate, newReport) {
 
-  	const reportDate = cf.getStatValueFromArgs(reportStats, "data")
-
-  	return await db.collection('results').doc(this.id).collection("raporty").doc(reportDate).set({
-    	czas: cf.getStatValueFromArgs(reportStats, "czas"),
-    	sluch: cf.getStatValueFromArgs(reportStats, "sluch"),
-    	technika: cf.getStatValueFromArgs(reportStats, "technika"),
-    	teoria: cf.getStatValueFromArgs(reportStats, "teoria")
-  	});
+		return await db.collection('results').doc(this.id).collection("raporty").doc(reportDate).set({
+			czas: newReport.czas,
+			sluch: newReport.sluch,
+			technika: newReport.technika,
+			teoria: newReport.teoria
+		});
 	}
 
-  async updateStats(db, admin, reportStats) {
+  async updateStats(db, admin, newReport) {
 
-  	const reportCzas = cf.getStatValueFromArgs(reportStats, "czas", true)
-  	const technikaPunkty = (cf.getStatValueFromArgs(reportStats, "technika", true) > 0 ? 1 : 0);
-  	const sluchPunkty = (cf.getStatValueFromArgs(reportStats, "sluch", true) > 0 ? 1 : 0);
-  	const teoriaPunkty = (cf.getStatValueFromArgs(reportStats, "teoria", true) > 0 ? 1 : 0);
+  	const reportCzas = newReport.czas
+  	const technikaPunkty = newReport.technika > 0 ? 1 : 0;
+  	const sluchPunkty = newReport.sluch > 0 ? 1 : 0;
+  	const teoriaPunkty = newReport.teoria > 0 ? 1 : 0;
 
   	const nowePunkty = +technikaPunkty + +sluchPunkty + +teoriaPunkty;
 
@@ -102,7 +100,7 @@ class User {
 	}
 
 	static async checkCurrentUserReport(db, userId, reportDate) {
-  	return await db.collection('results').doc(userId).collection("raporty").doc(reportDate).get();
+  		return await db.collection('results').doc(userId).collection("raporty").doc(reportDate).get();
 	}
 
 	static async addUser(db, username) {
