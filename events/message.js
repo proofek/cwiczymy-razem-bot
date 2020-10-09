@@ -4,6 +4,7 @@ const pomoc = require("../commands/pomoc")
 const nowyprofil = require("../commands/nowy-profil")
 const raport = require("../commands/raport")
 const profil = require("../commands/profil")
+const top10 = require("../commands/top10")
 
 module.exports = (client, db, admin, message) => {
 
@@ -46,5 +47,9 @@ console.log(util.inspect(command, {showHidden: false, depth: null}))*/
 
   if (command === "profil") {
     return profil(db, message, args)
+  }
+
+  if (command === "top10") {
+    return top10(db, message, args)
   }
 }

@@ -34,7 +34,11 @@ module.exports = (db, admin, message, args) => {
           }
 
           if (e == 'ReportTooOldException') {
-            return message.reply(`Podałeś nieprawidłową datę. Pamiętaj, że możesz nie możesz wysyłać raportów starszych niż 7 dni.`);
+            return message.reply(`Któżby pamiętał o tak starym ćwiczeniu? Raportuj na bieżąco. Pamiętaj, że nie możesz wysyłać raportów starszych niż 7 dni.`);
+          }
+
+          if (e == 'ReportInTheFutureException') {
+            return message.reply(`To się zapędziłeś  :boar:  ! Ćwiczenie w przyszłości? Możesz nam tylko powiedzieć o ćwiczeniu, które się już odbyło. Pamiętaj, akceptujemy raporty z dnia dzisiejszego lub 7-miu ostatnich dni.`);
           }
         }
       }
@@ -132,6 +136,10 @@ function parseReportDate(line) {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     if (diffDays > 7) {
       throw 'ReportTooOldException';
+    }
+
+    if (new Date() < reportDate) {
+      throw 'ReportInTheFutureException';
     }
   }
 

@@ -76,6 +76,7 @@ Referencje
 ==========
 
 * [Portal developerski Discorda](https://discord.com/developers/applications)
+* [Konsola firebase](https://console.firebase.google.com/u/0/project/bazok-dev/overview)
 * [Heroku application](https://dashboard.heroku.com/)
 * [Oryginalna aplikacja Ćwiczym razem](https://bazok-98f32.web.app/)
 * [Poradnik na podstawie którego stworzono bota](https://thomlom.dev/create-a-discord-bot-under-15-minutes/)

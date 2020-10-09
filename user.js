@@ -26,9 +26,9 @@ class User {
 		this.report = new Report();
 	}
 
-  get pointThisSeason() {
-   	return +this.technika + +this.sluch + +this.teoria;
-  }
+	  get pointThisSeason() {
+	   	return +this.technika + +this.sluch + +this.teoria;
+	  }
 
 	evalRank(punktySezon = null) {
 	  
@@ -70,23 +70,23 @@ class User {
 		});
 	}
 
-  async updateStats(db, admin, newReport) {
+  	async updateStats(db, admin, newReport) {
 
-  	const reportCzas = newReport.czas
-  	const technikaPunkty = newReport.technika > 0 ? 1 : 0;
-  	const sluchPunkty = newReport.sluch > 0 ? 1 : 0;
-  	const teoriaPunkty = newReport.teoria > 0 ? 1 : 0;
+	  	const reportCzas = newReport.czas
+	  	const technikaPunkty = newReport.technika > 0 ? 1 : 0;
+	  	const sluchPunkty = newReport.sluch > 0 ? 1 : 0;
+	  	const teoriaPunkty = newReport.teoria > 0 ? 1 : 0;
 
-  	const nowePunkty = +technikaPunkty + +sluchPunkty + +teoriaPunkty;
+	  	const nowePunkty = +technikaPunkty + +sluchPunkty + +teoriaPunkty;
 
-  	return await db.collection('results').doc(this.id).update({
-    	assHours: admin.firestore.FieldValue.increment(reportCzas),
-    	seasonsum: admin.firestore.FieldValue.increment(nowePunkty),
-    	technical: admin.firestore.FieldValue.increment(technikaPunkty),
-    	listening: admin.firestore.FieldValue.increment(sluchPunkty),
-    	theory: admin.firestore.FieldValue.increment(teoriaPunkty),
-    	level: this.evalRank(+this.pointThisSeason + +nowePunkty)
-  	});
+	  	return await db.collection('results').doc(this.id).update({
+	    	assHours: admin.firestore.FieldValue.increment(reportCzas),
+	    	seasonsum: admin.firestore.FieldValue.increment(nowePunkty),
+	    	technical: admin.firestore.FieldValue.increment(technikaPunkty),
+	    	listening: admin.firestore.FieldValue.increment(sluchPunkty),
+	    	theory: admin.firestore.FieldValue.increment(teoriaPunkty),
+	    	level: this.evalRank(+this.pointThisSeason + +nowePunkty)
+	  	});
 	}
 
 	
@@ -113,6 +113,12 @@ class User {
 			theory: 0,
 			removed: false
 		});
+	}
+
+	static async findTop10(db, sortby = 'seasonsum') {
+		return await db.collection('results')
+			.orderBy(sortby, 'desc')
+			.limit(10).get();
 	}
 }
 
