@@ -26,6 +26,9 @@ __Oto dostępne komendy:__
   - Czas ćwiczeń - ilość czasu poświecona na wszystkie ćwiczenia danego dnia. Parametr wymagany w formacie _HH:MM_, czyli 00:30 to 30 minut, 05:15 to 5 godzin i 15 minut.
   - Technika - za ćwiczenie techniki danego dnia przyznawany jest 1 punkt.
   - Słuch - za ćwiczenie słuchu danego dnia przyznawany jest 1 punkt.
-  - Teoria - za ćwiczenie teorii danego dnia przyznawany jest 1 punkt.`
+  - Teoria - za ćwiczenie teorii danego dnia przyznawany jest 1 punkt.
+
+- **!top10** - wyświetla aktualną tablicę wyników dla 10-ciu najlepszych graczy`
+
 	message.author.send(msgText);
 }

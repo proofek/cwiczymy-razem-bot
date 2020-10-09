@@ -26,9 +26,16 @@ class User {
 		this.report = new Report();
 	}
 
-	  get pointThisSeason() {
-	   	return +this.technika + +this.sluch + +this.teoria;
-	  }
+	get pointThisSeason() {
+		return +this.technika + +this.sluch + +this.teoria;
+	}
+
+	get timeThisSeason() {
+		const hours = Math.floor(+this.timeTotal)
+		const min = (+this.timeTotal % 1).toFixed(10);
+
+		return hours + ":" + Math.round(min*60);
+	}
 
 	evalRank(punktySezon = null) {
 	  

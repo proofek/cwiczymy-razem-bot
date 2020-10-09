@@ -13,7 +13,7 @@ class discordMessage {
 			fields: [
               	{
                 	name: 'Czas ćwiczeń',
-                	value: user.timeTotal + " h",
+                	value: user.timeThisSeason + " h",
                 	inline: true,
               	},
               	{
@@ -63,7 +63,7 @@ class discordMessage {
 			fields: [
               	{
                 	name: 'Czas ćwiczeń',
-                	value: user.timeTotal + " h",
+                	value: user.timeThisSeason + " h",
                 	inline: true,
               	},
               	{
