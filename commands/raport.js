@@ -7,12 +7,7 @@ module.exports = (db, admin, message, args) => {
   const discordMessage = require("../discordMessage")
   const chatMessage = new discordMessage();
 
-  const username = message.author.username;
-
-  if (!username) {
-    return message.reply(`Hmm... mamy mały problem. Nie wiemy kim jesteś!`)
-  }
-
+  let username = message.author.tag;
   let reportDate = '';
   let reportTime = '';
   let technicalPoints = 0;
@@ -83,6 +78,10 @@ module.exports = (db, admin, message, args) => {
 
   User.findUser(db, username)
     .then(function(userQuery) {
+
+      if (userQuery.empty) {
+        return message.reply(`Hmm... mamy mały problem. Aby zacząc ćwiczyć razem z nami zarejestruj się najpierw używając komendy _!nowy-profil_.`)
+      }
 
       userQuery.forEach((userFound) => {
 
