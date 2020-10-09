@@ -8,7 +8,7 @@ class discordMessage {
 			title: 'Statystyki   :boar:   ' + user.username,
 			description: 'Ilość punktów za wszystkie sezony: ' + user.pointsTotal,
 			thumbnail: {
-	  			url: 'http://localhost:3000/rangi/' + user.level + '.png',
+	  			url: 'https://github.com/proofek/cwiczymy-razem-bot/raw/main/rangi/' + user.level + '.png',
 			},
 			fields: [
               	{
