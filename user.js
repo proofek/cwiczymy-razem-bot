@@ -4,6 +4,8 @@ const cf = require("./common_functions.js")
 class User {
 
 	id = '';
+	discordTag = '';
+	nickname = '';
 	username = '';
 	pointsTotal = 0;
 	level = 1;
@@ -14,20 +16,22 @@ class User {
 
 	report;
 
-	constructor(userDoc) {
-		this.id = userDoc.id;
-		this.username = userDoc.get('name');
-		this.pointsTotal = (userDoc.get('seasonsum') || 0);
-		this.level = (userDoc.get('level') || 1);
-		this.timeTotal = (userDoc.get('assHours') || 0);
-		this.technika = (userDoc.get('technical') || 0);
-		this.sluch = (userDoc.get('listening') || 0);
-		this.teoria = (userDoc.get('theory') || 0);
-		this.report = new Report();
+	constructor() {
 	}
 
 	get pointThisSeason() {
 		return +this.technika + +this.sluch + +this.teoria;
+	}
+
+	get fullname() {
+		let fullname = '';
+		if (this.nickname) {
+			fullname = this.nickname + " (" + this.discordTag + ")"
+		} else {
+			fullname = this.discordTag;
+		}
+		
+		return fullname;
 	}
 
 	get timeThisSeason() {
@@ -35,6 +39,22 @@ class User {
 		const min = (+this.timeTotal % 1).toFixed(10);
 
 		return hours + ":" + Math.round(min*60);
+	}
+
+	static fromFirebaseDoc(userDoc) {
+		let user = new User();
+		user.id = userDoc.id;
+		user.discordTag = userDoc.get('name');;
+		user.nickname = userDoc.get('displayName');
+		user.pointsTotal = (userDoc.get('seasonsum') || 0);
+		user.level = (userDoc.get('level') || 1);
+		user.timeTotal = (userDoc.get('assHours') || 0);
+		user.technika = (userDoc.get('technical') || 0);
+		user.sluch = (userDoc.get('listening') || 0);
+		user.teoria = (userDoc.get('theory') || 0);
+		user.report = new Report();
+
+		return user;
 	}
 
 	evalRank(punktySezon = null) {
@@ -110,9 +130,10 @@ class User {
   		return await db.collection('results').doc(userId).collection("raporty").doc(reportDate).get();
 	}
 
-	static async addUser(db, username) {
+	static async addUser(db, user) {
 		return await db.collection("results").add({
-			name: username,
+			name: user.discordTag,
+			displayName: user.nickname,
 			seasonsum: 0,
 			level: 1,
 			technical: 0,

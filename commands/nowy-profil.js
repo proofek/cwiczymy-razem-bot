@@ -2,17 +2,16 @@ module.exports = (db, message, args) => {
 
   const User = require("../user.js")
 
-  const username = message.author.username;
+  let newUser = new User();
+  newUser.username = message.author.username;
+  newUser.discordTag = message.author.tag;
+  newUser.nickname = (message.member.nickname) ? message.member.nickname : '';
 
-  if (!username) {
-    return message.reply(`Hmm... mamy mały problem. Nie wiemy kim jesteś!`)
-  }
-
-  User.findUser(db, username)
+  User.findUser(db, newUser.discordTag)
       .then(function(userQuery) {
 
         if (userQuery.empty) {
-          User.addUser(db, username).then(function() {
+          User.addUser(db, newUser).then(function() {
             return message.reply(`:guitar::guitar::guitar: w dłoń! Zostałeś dodany do zabawy! Zaczynamy ćwiczenia!`)
           })
         } else {

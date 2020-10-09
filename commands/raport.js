@@ -86,7 +86,7 @@ module.exports = (db, admin, message, args) => {
 
       userQuery.forEach((userFound) => {
 
-        const user = new User(userFound);
+        const user = User.fromFirebaseDoc(userFound);
         User.checkCurrentUserReport(db, user.id, reportDate).then(function(currentReport) {
           if (!currentReport.exists) {
             user.addNewReport(db, reportDate, newReport).then(function(report) {
@@ -98,7 +98,7 @@ Przyznane punkty: technika ${technicalPoints}, słuch ${listeningPoints}, teoria
             }).then(function() {
               user.updateStats(db, admin, newReport).then(function(writeResult) {
                 user.fetchUser(db).then(function(userDoc) {
-                  const updatedUser = new User(userDoc);
+                  const updatedUser = User.fromFirebaseDoc(userDoc);
                   if (updatedUser.level > user.level) {
                     embededMessage = chatMessage.createLevelUpEmbedMessage(updatedUser);
                     message.reply({ embed: embededMessage }); 

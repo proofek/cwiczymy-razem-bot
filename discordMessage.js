@@ -5,7 +5,7 @@ class discordMessage {
 	createStatusEmbedMessage(user) {
 		const embededMessage = {
 			color: 0x0099ff,
-			title: 'Statystyki   :boar:   ' + user.username,
+			title: 'Statystyki   :boar:   ' + user.fullname,
 			description: 'Ilość punktów za wszystkie sezony: ' + user.pointsTotal,
 			thumbnail: {
 	  			url: 'https://github.com/proofek/cwiczymy-razem-bot/raw/main/rangi/' + user.level + '.png',
@@ -55,10 +55,10 @@ class discordMessage {
 	createLevelUpEmbedMessage(user) {
 		const embededMessage = {
 			color: 0x0099ff,
-			title: 'Awans   :boar:   ' + user.username,
+			title: 'Awans   :boar:   ' + user.fullname,
 			description: 'Awansowałeś na poziom ' + user.level,
 			thumbnail: {
-	  			url: 'http://localhost:3000/rangi/' + user.level + '.png',
+	  			url: 'https://github.com/proofek/cwiczymy-razem-bot/raw/main/rangi/' + user.level + '.png',
 			},
 			fields: [
               	{

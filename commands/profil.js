@@ -2,16 +2,15 @@ module.exports = (db, message, args) => {
 
   const User = require("../user.js")
   const discordMessage = require("../discordMessage")
-
   const chatMessage = new discordMessage();
 
-  let targetUser = message.author.username;
+  let targetUser = message.author.tag;
   if(args.length > 0){
     targetUser = args[0];
   }
 
   if (!targetUser) {
-    return message.reply(`Hmm... mamy mały problem. Nie wiemy jaki profil chcesz zobaczyć!`)
+    return message.reply(`Hmm... mamy mały problem. Nie wiemy kogo profil chcesz zobaczyć! Upewnij się, że podałeś pełną nazwę użytkownika Discorda.`)
   }
 
   User.findUser(db, targetUser)
@@ -23,7 +22,7 @@ module.exports = (db, message, args) => {
 
       userQuery.forEach((userFound) => {
         
-        const user = new User(userFound);
+        const user = User.fromFirebaseDoc(userFound);
         embededMessage = chatMessage.createStatusEmbedMessage(user);
         return message.reply({ embed: embededMessage });
       })

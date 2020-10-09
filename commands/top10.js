@@ -2,19 +2,15 @@ module.exports = (db, message, args) => {
 
   const User = require("../user.js")
   let replyMessage = '';
+  let position = 1;
+  let positionString = '';
   //const discordMessage = require("../discordMessage")
 
   //const chatMessage = new discordMessage();
 
-  let targetUser = message.author.username;
-  if(args.length > 0){
-    targetUser = args[0];
-  }
-
-  if (!targetUser) {
-    return message.reply(`Hmm... mamy mały problem. Nie wiemy jaki profil chcesz zobaczyć!`)
-  }
-
+  // seasonsum - ilość wszystkich punktów
+  // assHours - godziny
+  // level - poziom
   User.findTop10(db, 'seasonsum')
     .then(function(userQuery) {
 
@@ -23,9 +19,23 @@ module.exports = (db, message, args) => {
       }
 
       userQuery.forEach((userFound) => {
-        const user = new User(userFound);
-        const userLine = `\n${user.username}: ${user.pointsTotal}`
+        switch (position) {
+          case 1:
+            positionString = ":first_place:  ";
+            break;
+          case 2:
+            positionString = ":second_place:  ";
+            break;
+          case 3:
+            positionString = ":third_place:  ";
+            break;
+          default:
+            positionString = position + ".";
+        }
+        const user = User.fromFirebaseDoc(userFound);
+        const userLine = `\n${positionString} ${user.fullname} - ${user.pointsTotal}`
         replyMessage = replyMessage.concat(userLine);
+        position++;
         //embededMessage = chatMessage.createStatusEmbedMessage(user);
       })
 
