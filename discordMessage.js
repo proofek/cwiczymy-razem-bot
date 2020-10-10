@@ -41,6 +41,11 @@ class discordMessage {
                 	value: user.teoria,
                 	inline: true,
               	},
+                {
+                  name: 'Dodatkowe punkty',
+                  value: user.dodatkowePunkty,
+                  inline: true,
+                },
             ],
             timestamp: new Date(),
             footer: {
@@ -91,6 +96,11 @@ class discordMessage {
                 	value: user.teoria,
                 	inline: true,
               	},
+                {
+                  name: 'Dodatkowe punkty',
+                  value: user.dodatkowePunkty,
+                  inline: true,
+                },
             ],
             timestamp: new Date(),
             footer: {

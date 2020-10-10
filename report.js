@@ -4,6 +4,7 @@ class Report {
 	technika = '';
 	sluch = '';
 	teoria = '';
+	dokument = '';
 
 	get czas() {
 		return this.reportTime;

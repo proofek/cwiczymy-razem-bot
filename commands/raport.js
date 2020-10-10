@@ -2,8 +2,13 @@ module.exports = (db, admin, message, args) => {
 
   const cf = require("../common_functions.js")
   const dateformat = require('dateformat');
+  const getUrls = require('get-urls');
+  
   const User = require("../user.js")
+  
   const Report = require("../report.js")
+  const newReport = new Report();
+  
   const discordMessage = require("../discordMessage")
   const chatMessage = new discordMessage();
 
@@ -13,6 +18,7 @@ module.exports = (db, admin, message, args) => {
   let technicalPoints = 0;
   let listeningPoints = 0;
   let theoryPoints = 0;
+  let additionalPoints = 0;
 
   for (let line of args) {
 
@@ -62,6 +68,15 @@ module.exports = (db, admin, message, args) => {
       if (theoryPoints == 0) {
         theoryPoints = parseTheoryPoints(line);
       }
+
+      if (additionalPoints == 0) {
+        const urlsFound = getUrls(line);
+        if (urlsFound.size > 0) {
+          const urlsIterator = urlsFound[Symbol.iterator]();
+          newReport.dokument = urlsIterator.next().value;
+          additionalPoints = 1;
+        }
+      }
   };
 
   if (!reportTime) {
@@ -70,11 +85,18 @@ module.exports = (db, admin, message, args) => {
 
   reportDate = dateformat((!reportDate) ? new Date() : reportDate, 'isoDate');
 
-  const newReport = new Report();
   newReport.czas = reportTime;
   newReport.technika = technicalPoints;
   newReport.sluch = listeningPoints;
   newReport.teoria = theoryPoints;
+
+  if (additionalPoints == 0) {
+    if (message.attachments.size > 0) {
+      const attachment = message.attachments.values().next().value;
+      newReport.dokument = attachment.url;
+      additionalPoints = 1;
+    }
+  }
 
   User.findUser(db, username)
     .then(function(userQuery) {
@@ -91,7 +113,7 @@ module.exports = (db, admin, message, args) => {
             user.addNewReport(db, reportDate, newReport).then(function(report) {
               const replyMessage = `Nieźle  :boar:  ! Dziękujemy za raport na dzień '${reportDate}'
 Czas spędzony na ćwiczeniach: ${reportTime}h
-Przyznane punkty: technika ${technicalPoints}, słuch ${listeningPoints}, teoria ${theoryPoints}`
+Przyznane punkty: technika ${technicalPoints}, słuch ${listeningPoints}, teoria ${theoryPoints}, punkty dodatkowe ${additionalPoints}`
 
               return message.reply(replyMessage)
             }).then(function() {

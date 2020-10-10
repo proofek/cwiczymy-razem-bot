@@ -13,6 +13,7 @@ class User {
 	technika = 0;
 	sluch = 0;
 	teoria = 0;
+	dodatkowePunkty = 0;
 
 	report;
 
@@ -20,7 +21,7 @@ class User {
 	}
 
 	get pointThisSeason() {
-		return +this.technika + +this.sluch + +this.teoria;
+		return +this.technika + +this.sluch + +this.teoria + +this.dodatkowePunkty;
 	}
 
 	get fullname() {
@@ -52,6 +53,7 @@ class User {
 		user.technika = (userDoc.get('technical') || 0);
 		user.sluch = (userDoc.get('listening') || 0);
 		user.teoria = (userDoc.get('theory') || 0);
+		user.dodatkowePunkty = (userDoc.get('additionalPoints') || 0);
 		user.report = new Report();
 
 		return user;
@@ -93,7 +95,8 @@ class User {
 			czas: newReport.czas,
 			sluch: newReport.sluch,
 			technika: newReport.technika,
-			teoria: newReport.teoria
+			teoria: newReport.teoria,
+			dokument: newReport.dokument
 		});
 	}
 
@@ -103,6 +106,7 @@ class User {
 	  	const technikaPunkty = newReport.technika > 0 ? 1 : 0;
 	  	const sluchPunkty = newReport.sluch > 0 ? 1 : 0;
 	  	const teoriaPunkty = newReport.teoria > 0 ? 1 : 0;
+	  	const additionalPoints = (newReport.dokument) ? 1 : 0;
 
 	  	const nowePunkty = +technikaPunkty + +sluchPunkty + +teoriaPunkty;
 
@@ -112,6 +116,7 @@ class User {
 	    	technical: admin.firestore.FieldValue.increment(technikaPunkty),
 	    	listening: admin.firestore.FieldValue.increment(sluchPunkty),
 	    	theory: admin.firestore.FieldValue.increment(teoriaPunkty),
+	    	additionalPoints: admin.firestore.FieldValue.increment(additionalPoints),
 	    	level: this.evalRank(+this.pointThisSeason + +nowePunkty)
 	  	});
 	}
@@ -139,6 +144,7 @@ class User {
 			technical: 0,
 			listening: 0,
 			theory: 0,
+			additionalPoints: 0,
 			removed: false
 		});
 	}
