@@ -27,6 +27,7 @@ __Oto dostępne komendy:__
   - Technika - za ćwiczenie techniki danego dnia przyznawany jest 1 punkt.
   - Słuch - za ćwiczenie słuchu danego dnia przyznawany jest 1 punkt.
   - Teoria - za ćwiczenie teorii danego dnia przyznawany jest 1 punkt.
+  - Aby zdobyć 1 dodatkowy punkt - umieść w raporcie link dokumentujący ćwiczenie LUB wrzuć na kanał załącznik dokumentujący ćwiczenie i dołącz raport w komentarzu do pliku. 
 
 - **!top10** - wyświetla aktualną tablicę wyników dla 10-ciu najlepszych graczy`
 
