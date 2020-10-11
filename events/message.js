@@ -5,6 +5,7 @@ const nowyprofil = require("../commands/nowy-profil")
 const raport = require("../commands/raport")
 const profil = require("../commands/profil")
 const top10 = require("../commands/top10")
+const nowysezon = require("../commands/nowy-sezon")
 
 module.exports = (client, db, admin, message) => {
 
@@ -18,6 +19,20 @@ module.exports = (client, db, admin, message) => {
   args2 = command.split(/ +/)
   command = args2.shift().toLowerCase().trim();
   args = args2.concat(args)
+
+  const filter = (reaction, user) => {
+    return reaction.emoji.name === '👍';
+  };
+
+  const collector = message.createReactionCollector(filter, { });
+
+  collector.on('collect', (reaction, user) => {
+    console.log(`Collected ${reaction.emoji.name} from ${user.tag}`);
+  });
+
+  collector.on('end', collected => {
+    console.log(`Collected ${collected.size} items`);
+  });
 
 /*const util = require('util')
 
@@ -51,5 +66,9 @@ console.log(util.inspect(command, {showHidden: false, depth: null}))*/
 
   if (command === "top10") {
     return top10(db, message, args)
+  }
+
+  if (command === "nowy-sezon") {
+    return nowysezon(db, message, args)
   }
 }
