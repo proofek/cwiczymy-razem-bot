@@ -108,7 +108,7 @@ class User {
 	  	const teoriaPunkty = newReport.teoria > 0 ? 1 : 0;
 	  	const additionalPoints = (newReport.dokument) ? 1 : 0;
 
-	  	const nowePunkty = +technikaPunkty + +sluchPunkty + +teoriaPunkty;
+	  	const nowePunkty = +technikaPunkty + +sluchPunkty + +teoriaPunkty + +additionalPoints;
 
 	  	return await db.collection('results').doc(this.id).update({
 	    	assHours: admin.firestore.FieldValue.increment(reportCzas),
