@@ -33,7 +33,8 @@ module.exports = (db, admin, message, args) => {
       });
 
       Season.findCurrentSeason(db).then(function(currentSeasonQuery) {
-        let noSeasonMessage = `Cierpliwości  :boar:  . Na razie nie ćwiczymy. Szukaj informacji na temat kolejnego sezonu na kanale ${message.guild.channels.cache.find(channel => channel.name === "cwiczymy-razem").toString()}.`;
+        const cwiczymyrazemChannel = message.guild.channels.cache.find(channel => channel.name === "cwiczymy-razem");
+        let noSeasonMessage = `Cierpliwości  :boar:  . Na razie nie ćwiczymy. Szukaj informacji na temat kolejnego sezonu na kanale ${(cwiczymyrazemChannel) ? cwiczymyrazemChannel.toString() : '#cwiczymy-razem'}.`;
         let replyMessage = null;
 
         if (currentSeasonQuery.empty) {
