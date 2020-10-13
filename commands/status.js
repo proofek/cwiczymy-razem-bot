@@ -19,7 +19,7 @@ module.exports = (db, admin, message, args) => {
         }
         
         const season = Season.fromFirebaseDoc(seasonFound);
-        season.fetchWinners(db, admin).then((arg) => {
+        season.fetchWinners(db, admin).then(() => {
           embededMessage = chatMessage.createSeasonStatusEmbedMessage(season);
           return message.reply({ embed: embededMessage });          
         });
@@ -46,18 +46,18 @@ module.exports = (db, admin, message, args) => {
 
         currentSeasonQuery.forEach((currentSeasonFound) => {
           const currentSeason = Season.fromFirebaseDoc(currentSeasonFound);
-          season.fetchWinners(db, admin);
-
-          if (Date.parse(currentSeason.endDate) < Date.now()) {
-            replyMessage = noSeasonMessage;
-            if (nextSeason) {
-              replyMessage = replyMessage + ` Sezon ${currentSeason.number} już się zakończył, a sezon ${nextSeason.number} rozpocznie się ${nextSeason.startDate}.`
+          currentSeason.fetchWinners(db, admin).then(() => {
+            if (Date.parse(currentSeason.endDate) < Date.now()) {
+              replyMessage = noSeasonMessage;
+              if (nextSeason) {
+                replyMessage = replyMessage + ` Sezon ${currentSeason.number} już się zakończył, a sezon ${nextSeason.number} rozpocznie się ${nextSeason.startDate}.`
+              }
+              return message.reply(replyMessage)
             }
-            return message.reply(replyMessage)
-          }
 
-          embededMessage = chatMessage.createSeasonStatusEmbedMessage(currentSeason);
-          return message.reply({ embed: embededMessage });
+            embededMessage = chatMessage.createSeasonStatusEmbedMessage(currentSeason);
+            return message.reply({ embed: embededMessage });
+          });
         })
       });
     });
