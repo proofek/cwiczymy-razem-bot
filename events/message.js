@@ -7,6 +7,7 @@ const profil = require("../commands/profil")
 const top10 = require("../commands/top10")
 const nowysezon = require("../commands/nowy-sezon")
 const status = require("../commands/status")
+const odznaki = require("../commands/odznaki")
 
 module.exports = (client, db, admin, message) => {
 
@@ -61,5 +62,9 @@ console.log(util.inspect(command, {showHidden: false, depth: null}))*/
 
   if (command === "status") {
     return status(db, admin, message, args)
+  }
+
+  if (command === "odznaki") {
+    return odznaki(db, message, args)
   }
 }

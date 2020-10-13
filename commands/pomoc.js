@@ -37,7 +37,8 @@ __Oto dostępne komendy:__
 
   - **!status _[numer-sezonu]_** - wyświetla status i statystki dla sezonu o podanym _numerze-sezonu_. W przypadku pominięcia *numeru-sezonu*, wyświetlony zostaje status is statystyki aktualnego sezonu.
 
-_Wersja bota: 1.0.2_
+  - **!odznaki** - wyświetla listę dostępnych odznak do zdobycia przez graczy
+_Wersja bota: 1.0.3_
 `
 	message.author.send(msgText1);
   message.author.send(msgText2);
