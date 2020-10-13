@@ -111,6 +111,66 @@ class discordMessage {
 
 		return embededMessage;
 	}
+
+  createSeasonStatusEmbedMessage(season) {
+
+    let fields = [
+      {
+        name: 'Data rozpoczęcia sezonu',
+        value: season.startDate,
+        inline: true,
+      },
+      {
+        name: 'Data zakończenia sezonu',
+        value: season.endDate,
+        inline: true,
+      },
+      ];
+
+    if (season.toSeasonEnd > 0) {
+      fields.push({
+        name: 'Do zakończenia sezonu pozostało',
+        value: season.toSeasonEnd + ' dni',
+        inline: true,
+      });
+    }
+
+    season.winners.forEach((winner, index) => {
+      let medal = null;
+      switch (index) {
+        case 0:
+          medal = ":first_place:";
+          break;
+        case 1:
+          medal = ":second_place:";
+          break;
+        case 2:
+          medal = ":third_place:";
+          break;
+        default:
+          medal = "";
+      }
+
+      fields.push({
+        name: `${medal} ${winner.fullname}`,
+        value: winner.pointsTotal,
+      });
+    });
+
+    const embededMessage = {
+      color: 0x0099ff,
+      title: 'Season ' + season.number,
+      description: '',
+      fields: fields,
+      timestamp: new Date(),
+      footer: {
+          text: 'Ćwiczymy razem z Bazokiem',
+          icon_url: 'https://cdn.discordapp.com/attachments/654713734845038624/723247496926724227/bazok_color.png',
+      },
+    }
+
+    return embededMessage;
+  }
 }
 
 module.exports = discordMessage;

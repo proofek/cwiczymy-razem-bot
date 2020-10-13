@@ -1,36 +1,53 @@
 module.exports = (db, message, args) => {
 
+  if (!message.member.roles.cache.some(role => role.name === 'MODERATORZY')) {
+    return message.reply(`Tylko moderatorzy mogą zarządzać sezonami gry!`)
+  }
+
   const Season = require("../season.js")
 
-  let season = new Season();
+  const newSeason = new Season();
+  let startDate = '';
+  let endDate = '';
+  for (let line of args) {
+
+    if (startDate = parseStartDate(line)) {
+      newSeason.startDate = startDate;
+    }
+
+    if (endDate = parseEndDate(line)) {
+      newSeason.endDate = endDate;
+    }
+  };
+
+  if (Date.parse(newSeason.startDate) >= Date.parse(newSeason.endDate)) {
+    return message.reply(`Nowy sezon nie może zacząć przed swoim zakończeniem. Sprawdź dobrze datę rozpoczęcia i zakończenia sezonu!`)
+  }
+
+  if (Date.parse(newSeason.startDate) <= Date.now()) {
+    return message.reply(`Nowy sezon nie może rozpocząć się w przeszłości. Sprawdź dobrze datę rozpoczęcia i upewnij się, że jest ona w przyszłości`)
+  }
 
   Season.findLastSeason(db)
     .then(function(seasonQuery) {
 
+      let season = new Season();
       seasonQuery.forEach((seasonFound) => {
         season = Season.fromFirebaseDoc(seasonFound);
       });
-    })
-    .then(function(param) {
 
-      const newSeason = new Season();
+      return season;
+    })
+    .then(function(season) {
+
+      if (Date.parse(newSeason.startDate) <= Date.parse(season.endDate)) {
+        return message.reply(`Nowy sezon nie może zacząć przed zakończeniem starego sezonu. Upewnij się, że kolejny sezon zaczyna się po ${season.endDate}`)
+      }
+
       newSeason.number = (season.number) ? +season.number + 1 : 1;
 
-      let startDate = '';
-      let endDate = '';
-      for (let line of args) {
-
-        if (startDate = parseStartDate(line)) {
-          newSeason.startDate = startDate;
-        }
-
-        if (endDate = parseEndDate(line)) {
-          newSeason.endDate = endDate;
-        }
-      };
-
       Season.addSeason(db, newSeason).then(function() {
-        return message.reply(`:guitar::guitar::guitar: w dłoń! Sezon ${newSeason.number} rozpoczęty! Ćwiczenia zaczynamy od ${newSeason.startDate}!`)
+        return message.reply(`:guitar::guitar::guitar: w dłoń! Sezon ${newSeason.number} rozpoczęty! Ćwiczenia zaczynamy ${newSeason.startDate}!`)
       })
 
     });

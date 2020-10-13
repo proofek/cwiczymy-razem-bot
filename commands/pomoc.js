@@ -32,10 +32,10 @@ __Oto dostępne komendy:__
     - Aby zdobyć 1 dodatkowy punkt - umieść w raporcie link dokumentujący ćwiczenie LUB wrzuć na kanał załącznik dokumentujący ćwiczenie i dołącz raport w komentarzu do pliku. 
 
   - **!top10** - wyświetla aktualną tablicę wyników dla 10-ciu najlepszych graczy
-  - **!nowy-sezon startDate=YYYY-MM-DD endDate=YYYY-MM-DD** - tworzy nowy sezon gry w podanym terminie. Wymagany format daty to _YYYY-MM-DD_, czyli np. 2020-10-01.
+  - **!nowy-sezon _startDate=YYYY-MM-DD_ _endDate=YYYY-MM-DD_** - tworzy nowy sezon gry w podanym terminie. Wymagany format daty to _YYYY-MM-DD_, czyli np. 2020-10-01.
+  - **!status _[numer-sezonu]_** - wyświetla status i statystki dla sezonu o podanym _numerze-sezonu_. W przypadku pominięcia *numeru-sezonu*, wyświetlony zostaje status is statystyki aktualnego sezonu.
 
-
-_Wersja bota: ${process.env.npm_package_version}_
+_Wersja bota: 1.0.2_
 `
 
 	message.author.send(msgText);
