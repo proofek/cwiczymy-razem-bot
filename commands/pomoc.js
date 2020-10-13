@@ -1,8 +1,6 @@
 module.exports = (message, args) => {
 
-  require("dotenv").config();
-
-	const msgText = `Wszystkie komendy bota poprzedzone są znakiem wykrzyknika (!). Argumenty w nawiasach kwadratowych [] są opcjonalne.
+	const msgText1 = `Wszystkie komendy bota poprzedzone są znakiem wykrzyknika (!). Argumenty w nawiasach kwadratowych [] są opcjonalne.
 
 __Oto dostępne komendy:__
 
@@ -29,14 +27,18 @@ __Oto dostępne komendy:__
     - Technika - za ćwiczenie techniki danego dnia przyznawany jest 1 punkt.
     - Słuch - za ćwiczenie słuchu danego dnia przyznawany jest 1 punkt.
     - Teoria - za ćwiczenie teorii danego dnia przyznawany jest 1 punkt.
-    - Aby zdobyć 1 dodatkowy punkt - umieść w raporcie link dokumentujący ćwiczenie LUB wrzuć na kanał załącznik dokumentujący ćwiczenie i dołącz raport w komentarzu do pliku. 
+    - Aby zdobyć 1 dodatkowy punkt - umieść w raporcie link dokumentujący ćwiczenie LUB wrzuć na kanał załącznik dokumentujący ćwiczenie i dołącz raport w komentarzu do pliku. `
+
+  const msgText2 = `
 
   - **!top10** - wyświetla aktualną tablicę wyników dla 10-ciu najlepszych graczy
+
   - **!nowy-sezon _startDate=YYYY-MM-DD_ _endDate=YYYY-MM-DD_** - tworzy nowy sezon gry w podanym terminie. Wymagany format daty to _YYYY-MM-DD_, czyli np. 2020-10-01.
+
   - **!status _[numer-sezonu]_** - wyświetla status i statystki dla sezonu o podanym _numerze-sezonu_. W przypadku pominięcia *numeru-sezonu*, wyświetlony zostaje status is statystyki aktualnego sezonu.
 
 _Wersja bota: 1.0.2_
 `
-
-	message.author.send(msgText);
+	message.author.send(msgText1);
+  message.author.send(msgText2);
 }
