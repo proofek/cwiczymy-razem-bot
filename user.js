@@ -1,4 +1,5 @@
 const Report = require("./report.js")
+const Badge = require("./badge.js")
 const cf = require("./common_functions.js")
 
 class User {
@@ -15,7 +16,8 @@ class User {
 	teoria = 0;
 	dodatkowePunkty = 0;
 
-	report;
+	report = [];
+	badges = []
 
 	constructor() {
 	}
@@ -40,6 +42,30 @@ class User {
 		const min = (+this.timeTotal % 1).toFixed(10);
 
 		return hours + ":" + Math.round(min*60);
+	}
+
+	addBadge(badge) {
+		this.badges.push(badge);
+	}
+
+	awardNewBadges(newReport) {
+		let newBadges = [];
+
+		// Zaklinacz czasu
+		if ((+newReport.czas >= 5) && !this.findBadgeById("Zaklinacz czasu").length ) {
+			newBadges.push("Zaklinacz czasu");
+		}
+		
+		console.log(newBadges)
+		return newBadges;
+	}
+
+	findBadgeById(badgeId)
+	{
+		return this.badges.filter((badge) => {
+			console.log("filter badge: " + badge)
+ 			return badge.id == badgeId
+		});
 	}
 
 	static fromFirebaseDoc(userDoc) {
@@ -100,25 +126,29 @@ class User {
 		});
 	}
 
-  	async updateStats(db, admin, newReport) {
+	async fetchBadges(db) {
+		return await db.collection('results').doc(this.id).collection("badges").get();
+	}
 
-	  	const reportCzas = newReport.czas
-	  	const technikaPunkty = newReport.technika > 0 ? 1 : 0;
-	  	const sluchPunkty = newReport.sluch > 0 ? 1 : 0;
-	  	const teoriaPunkty = newReport.teoria > 0 ? 1 : 0;
-	  	const additionalPoints = (newReport.dokument) ? 1 : 0;
+	async updateStats(db, admin, newReport) {
 
-	  	const nowePunkty = +technikaPunkty + +sluchPunkty + +teoriaPunkty + +additionalPoints;
+  	const reportCzas = newReport.czas
+  	const technikaPunkty = newReport.technika > 0 ? 1 : 0;
+  	const sluchPunkty = newReport.sluch > 0 ? 1 : 0;
+  	const teoriaPunkty = newReport.teoria > 0 ? 1 : 0;
+  	const additionalPoints = (newReport.dokument) ? 1 : 0;
 
-	  	return await db.collection('results').doc(this.id).update({
-	    	assHours: admin.firestore.FieldValue.increment(reportCzas),
-	    	seasonsum: admin.firestore.FieldValue.increment(nowePunkty),
-	    	technical: admin.firestore.FieldValue.increment(technikaPunkty),
-	    	listening: admin.firestore.FieldValue.increment(sluchPunkty),
-	    	theory: admin.firestore.FieldValue.increment(teoriaPunkty),
-	    	additionalPoints: admin.firestore.FieldValue.increment(additionalPoints),
-	    	level: this.evalRank(+this.pointThisSeason + +nowePunkty)
-	  	});
+  	const nowePunkty = +technikaPunkty + +sluchPunkty + +teoriaPunkty + +additionalPoints;
+
+  	return await db.collection('results').doc(this.id).update({
+    	assHours: admin.firestore.FieldValue.increment(reportCzas),
+    	seasonsum: admin.firestore.FieldValue.increment(nowePunkty),
+    	technical: admin.firestore.FieldValue.increment(technikaPunkty),
+    	listening: admin.firestore.FieldValue.increment(sluchPunkty),
+    	theory: admin.firestore.FieldValue.increment(teoriaPunkty),
+    	additionalPoints: admin.firestore.FieldValue.increment(additionalPoints),
+    	level: this.evalRank(+this.pointThisSeason + +nowePunkty)
+  	});
 	}
 
 	

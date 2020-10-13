@@ -5,7 +5,8 @@ module.exports = (db, admin, message, args) => {
   const getUrls = require('get-urls');
   
   const User = require("../user.js")
-  
+  const Badge = require("../badge.js")
+
   const Report = require("../report.js")
   const newReport = new Report();
   
@@ -116,7 +117,25 @@ Czas spędzony na ćwiczeniach: ${reportTime}h
 Przyznane punkty: technika ${technicalPoints}, słuch ${listeningPoints}, teoria ${theoryPoints}, punkty dodatkowe ${additionalPoints}`
 
               return message.reply(replyMessage)
-            }).then(function() {
+            }).then(() => {
+              user.fetchBadges(db).then((badgeQuery) => {
+                badgeQuery.forEach((badgeFound) => {
+                  const badge = Badge.fromFirebaseDoc(badgeFound);
+                  user.addBadge(badge);
+                });
+              }).then(() => {
+                const newBadges = user.awardNewBadges(newReport);
+                newBadges.forEach((badgeId) => {
+                  Badge.fetchBadge(db, badgeId).then((badgeDoc) => {
+                    const badge = Badge.fromFirebaseDoc(badgeDoc);
+                    badge.awardToUser(db, user.id).then((writeResult) => {
+                      embededMessage = chatMessage.createNewBadgeEmbedMessage(user, badge);
+                      return message.reply({ embed: embededMessage });
+                    });
+                  });
+                });
+              });
+
               user.updateStats(db, admin, newReport).then(function(writeResult) {
                 user.fetchUser(db).then(function(userDoc) {
                   const updatedUser = User.fromFirebaseDoc(userDoc);

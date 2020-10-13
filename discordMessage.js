@@ -171,6 +171,25 @@ class discordMessage {
 
     return embededMessage;
   }
+
+  createNewBadgeEmbedMessage(user, badge) {
+    const embededMessage = {
+      color: 0x0099ff,
+      title: `Zdobyto odznakę ${badge.discordEmoji} ${badge.id}!`,
+      description: `Gratulacje ${user.fullname}! Zdobyłeś nową odznakę!`,
+      thumbnail: {
+          url: 'https://www.emoji.co.uk/files/mozilla-emojis/objects-mozilla/11862-hourglass.png',
+      },
+      timestamp: new Date(),
+      footer: {
+          text: 'Ćwiczymy razem z Bazokiem',
+          icon_url: 'https://cdn.discordapp.com/attachments/654713734845038624/723247496926724227/bazok_color.png',
+      },
+    }
+
+    return embededMessage;
+  }
+
 }
 
 module.exports = discordMessage;
