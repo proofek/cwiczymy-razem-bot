@@ -5,6 +5,7 @@ class Badge {
 	removed = false;
 	badge = null;
 	discordEmoji = null;
+	imgUrl = null;
 	type = null;
 	
 	constructor() {
@@ -21,6 +22,10 @@ class Badge {
 		});
 	}
 
+	static async fetchBadgesById(db, admin, badges) {
+		return await db.collection('achievements').where(admin.firestore.FieldPath.documentId(), 'in', badges).get();
+	}
+
 	static fromFirebaseDoc(badgeDoc) {
 		let badge = new Badge();
 		badge.id = badgeDoc.id;
@@ -29,6 +34,7 @@ class Badge {
 		badge.badge = (badgeDoc.get('badge') || 'Brak ikony odznaki');
 		badge.discordEmoji = (badgeDoc.get('discordEmoji') || ':medal:');
 		badge.type = (badgeDoc.get('type') || ':medal:');
+		badge.imgUrl = (badgeDoc.get('imgUrl') || null);
 
 		return badge;
 	}

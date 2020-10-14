@@ -56,7 +56,16 @@ class User {
 			newBadges.push("Zaklinacz czasu");
 		}
 		
-		console.log(newBadges)
+  	// 50H
+		if ((+this.timeTotal >= 50) && !this.findBadgeById("50H").length ) {
+			newBadges.push("50H");
+		}
+
+  	// 100H
+		if ((+this.timeTotal >= 100) && !this.findBadgeById("100H").length ) {
+			newBadges.push("100H");
+		}
+
 		return newBadges;
 	}
 

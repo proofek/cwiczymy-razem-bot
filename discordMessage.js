@@ -2,11 +2,17 @@ const User = require("./user.js")
 
 class discordMessage {
 
-	createStatusEmbedMessage(user) {
+	createProfileEmbedMessage(user, badges) {
+
+    let badgesList = "";
+    badges.forEach((badge) => {
+      badgesList = `${badgesList} ${badge.discordEmoji}`
+    });
+
 		const embededMessage = {
 			color: 0x0099ff,
 			title: 'Statystyki   :boar:   ' + user.fullname,
-			description: 'Ilość punktów za wszystkie sezony: ' + user.pointsTotal,
+			description: `${badgesList}\n\nIlość punktów za wszystkie sezony: ${user.pointsTotal}`,
 			thumbnail: {
 	  			url: 'https://github.com/proofek/cwiczymy-razem-bot/raw/main/rangi/' + user.level + '.png',
 			},
@@ -176,9 +182,9 @@ class discordMessage {
     const embededMessage = {
       color: 0x0099ff,
       title: `Zdobyto odznakę ${badge.discordEmoji} ${badge.id}!`,
-      description: `Gratulacje ${user.fullname}! Zdobyłeś nową odznakę!`,
+      description: `Gratulacje ${user.fullname}! Zdobyłeś nową odznakę!\n${badge.description}`,
       thumbnail: {
-          url: 'https://www.emoji.co.uk/files/mozilla-emojis/objects-mozilla/11862-hourglass.png',
+          url: badge.imgUrl,
       },
       timestamp: new Date(),
       footer: {

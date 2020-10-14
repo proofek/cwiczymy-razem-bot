@@ -49,7 +49,7 @@ console.log(util.inspect(command, {showHidden: false, depth: null}))*/
   }
 
   if (command === "profil") {
-    return profil(db, message, args)
+    return profil(db, admin, message, args)
   }
 
   if (command === "top10") {
