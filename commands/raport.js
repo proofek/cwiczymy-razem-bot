@@ -86,11 +86,6 @@ module.exports = (db, admin, message, args) => {
 
   reportDate = dateformat((!reportDate) ? new Date() : reportDate, 'isoDate');
 
-  newReport.czas = reportTime;
-  newReport.technika = technicalPoints;
-  newReport.sluch = listeningPoints;
-  newReport.teoria = theoryPoints;
-
   if (additionalPoints == 0) {
     if (message.attachments.size > 0) {
       const attachment = message.attachments.values().next().value;
@@ -99,59 +94,86 @@ module.exports = (db, admin, message, args) => {
     }
   }
 
-  User.findUser(db, username)
-    .then(function(userQuery) {
+  newReport.czas = reportTime;
+  newReport.technika = technicalPoints;
+  newReport.sluch = listeningPoints;
+  newReport.teoria = theoryPoints;
+  newReport.dodatkowePunkty = additionalPoints;
 
-      if (userQuery.empty) {
-        return message.reply(`Hmm... mamy mały problem. Aby zacząc ćwiczyć razem z nami zarejestruj się najpierw używając komendy _!nowy-profil_.`)
+  // Znajdź użytkownika dla którego mamy przetworzyć raport
+
+  saveReport(db, username, reportDate, newReport)
+    .then((result) => {
+      console.log('Wykonano poprawnie. ' + result.id);
+    })
+    .catch((error) => {
+      switch (error) {
+        case 'NoUserException':
+          return message.reply(`Hmm... mamy mały problem. Aby zacząc ćwiczyć razem z nami zarejestruj się najpierw używając komendy _!nowy-profil_.`)
+        case 'ReportAlreadyExistsException':
+          return message.reply(`Otrzymaliśmy już od Ciebie raport na dzień '${reportDate}'. Pamiętaj, że możesz wysyłać tylko jeden raport dziennie.`);
+        default:
+          console.log('Unexpected failure:', error);
+          return message.reply(`Niestety mamy jakiś problem z przetworzeniem twojego raportu. Daj nam znać to spróbujemy to naprawić.`);
       }
-
-      userQuery.forEach((userFound) => {
-
-        const user = User.fromFirebaseDoc(userFound);
-        User.checkCurrentUserReport(db, user.id, reportDate).then(function(currentReport) {
-          if (!currentReport.exists) {
-            user.addNewReport(db, reportDate, newReport).then(function(report) {
-              const replyMessage = `Nieźle  :boar:  ! Dziękujemy za raport na dzień '${reportDate}'
-Czas spędzony na ćwiczeniach: ${reportTime}h
-Przyznane punkty: technika ${technicalPoints}, słuch ${listeningPoints}, teoria ${theoryPoints}, punkty dodatkowe ${additionalPoints}`
-
-              return message.reply(replyMessage)
-            }).then(() => {
-              user.fetchBadges(db).then((badgeQuery) => {
-                badgeQuery.forEach((badgeFound) => {
-                  const badge = Badge.fromFirebaseDoc(badgeFound);
-                  user.addBadge(badge);
-                });
-              }).then(() => {
-                const newBadges = user.awardNewBadges(newReport);
-                newBadges.forEach((badgeId) => {
-                  Badge.fetchBadge(db, badgeId).then((badgeDoc) => {
-                    const badge = Badge.fromFirebaseDoc(badgeDoc);
-                    badge.awardToUser(db, user.id).then((writeResult) => {
-                      embededMessage = chatMessage.createNewBadgeEmbedMessage(user, badge);
-                      return message.reply({ embed: embededMessage });
-                    });
-                  });
-                });
-              });
-
-              user.updateStats(db, admin, newReport).then(function(writeResult) {
-                user.fetchUser(db).then(function(userDoc) {
-                  const updatedUser = User.fromFirebaseDoc(userDoc);
-                  if (updatedUser.level > user.level) {
-                    embededMessage = chatMessage.createLevelUpEmbedMessage(updatedUser);
-                    message.reply({ embed: embededMessage }); 
-                  }
-                });
-              });
-            });
-          } else {
-            return message.reply(`Otrzymaliśmy już od Ciebie raport na dzień '${reportDate}'. Pamiętaj, że możesz wysyłać tylko jeden raport dziennie.`);
-          }
-        });
-      })
     });
+
+  async function saveReport(db, username, reportDate, newReport) {
+    let user = null;
+    let exception = null;
+    const promises = [];
+
+    try {
+
+      user = await User.findUser(db, username);
+      let newBadges = null;
+      const reportExists = await user.checkReportExists(db, reportDate);
+      if (reportExists) {
+        throw 'ReportAlreadyExistsException';
+      }
+      
+      await user.fetchBadges(db)
+        .then(async () => {
+          await user.awardNewBadges(db, admin, newReport)
+            .then(async (badgesAwarded) => {
+              await user.addNewReport(db, admin, reportDate, newReport, badgesAwarded)
+                .then((writeResult) => {
+
+                  const replyMessage = `Nieźle  :boar:  ! Dziękujemy za raport na dzień '${reportDate}'
+Czas spędzony na ćwiczeniach: ${newReport.czas}h
+Przyznane punkty: technika ${newReport.technika}, słuch ${newReport.sluch}, teoria ${newReport.teoria}, punkty dodatkowe ${newReport.dodatkowePunkty}`
+                  message.reply(replyMessage)
+
+                  badgesAwarded.forEach((badgeId) => {
+                    Badge.fetchBadge(db, badgeId)
+                      .then((badge) => {
+                        embededMessage = chatMessage.createNewBadgeEmbedMessage(user, badge);
+                        return message.reply({ embed: embededMessage });
+                      })
+                  })
+
+                  user.fetchUser(db)
+                    .then((updatedUser) => {
+                      if (updatedUser.level > user.level) {
+                        embededMessage = chatMessage.createLevelUpEmbedMessage(updatedUser);
+                        message.reply({ embed: embededMessage }); 
+                      }
+                    });
+                })
+            })
+        })
+    } catch (e) {
+      exception = e;
+    }
+
+    return new Promise((resolve, reject) => {
+        if (exception) {
+          reject(exception);
+        } else {
+          resolve(user)  
+        }
+    });
+  }
 }
 
 function parseReportDate(line) {

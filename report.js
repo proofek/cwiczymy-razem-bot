@@ -1,9 +1,10 @@
 class Report {
 
-	reportTime = '';
-	technika = '';
-	sluch = '';
-	teoria = '';
+	reportTime = null;
+	technika = 0;
+	sluch = 0;
+	teoria = 0;
+	dodatkowePunkty = 0;
 	dokument = '';
 
 	get czas() {

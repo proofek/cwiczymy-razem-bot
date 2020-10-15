@@ -2,10 +2,10 @@ const User = require("./user.js")
 
 class discordMessage {
 
-	createProfileEmbedMessage(user, badges) {
+	createProfileEmbedMessage(user) {
 
     let badgesList = "";
-    badges.forEach((badge) => {
+    user.badges.forEach((badge) => {
       badgesList = `${badgesList} ${badge.discordEmoji}`
     });
 

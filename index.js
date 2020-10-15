@@ -24,3 +24,18 @@ fs.readdir("./events/", (err, files) => {
 })
 
 client.login(process.env.BOT_TOKEN)
+
+let checkedAlready = false;
+const intervalObj = client.setInterval(() => {
+  const currentDateTime = new Date();
+  console.log(`[${currentDateTime.toString()}] Running interval with checkedAlready=${checkedAlready}`);
+  // 0 - Sunday, 5 - Friday
+  const dayOfWeek = currentDateTime.getDay();
+  if (!checkedAlready && dayOfWeek == 4) {
+    client.emit('checkForWeeklyAwards');
+    checkedAlready = true;
+  } else if (dayOfWeek != 3) {
+    checkedAlready = false;
+  }
+  
+}, 3600000, checkedAlready);
