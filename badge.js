@@ -8,6 +8,9 @@ class Badge {
   imgUrl = null;
   type = null;
 
+  static BADGE_LEADER = "Lider";
+  static BADGE_STAROFTHEWEEK = "Gwiazda Tygodnia";
+
   constructor() {
   }
 

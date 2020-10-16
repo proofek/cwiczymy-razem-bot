@@ -6,6 +6,7 @@ module.exports = (db, admin, message, args) => {
   
   const User = require("../user.js")
   const Badge = require("../badge.js")
+  const Season = require("../season.js")
 
   const Report = require("../report.js")
   const newReport = new Report();
@@ -100,25 +101,37 @@ module.exports = (db, admin, message, args) => {
   newReport.teoria = theoryPoints;
   newReport.dodatkowePunkty = additionalPoints;
 
-  // Znajdź użytkownika dla którego mamy przetworzyć raport
-
-  saveReport(db, username, reportDate, newReport)
-    .then((result) => {
-      console.log('Wykonano poprawnie. ' + result.id);
+  Season.findCurrentSeason(db)
+    .then((season) => {
+      console.log(`Zapisuję raport dla ${season.id}`)
+      saveReport(db, username, season.id, reportDate, newReport)
+        .then((result) => {
+          console.log('Wykonano poprawnie. ' + result.id);
+        })
+        .catch((error) => {
+          switch (error) {
+            case 'NoUserException':
+              return message.reply(`Hmm... mamy mały problem. Aby zacząc ćwiczyć razem z nami zarejestruj się najpierw używając komendy _!nowy-profil_.`)
+            case 'ReportAlreadyExistsException':
+              return message.reply(`Otrzymaliśmy już od Ciebie raport na dzień '${reportDate}'. Pamiętaj, że możesz wysyłać tylko jeden raport dziennie.`);
+            default:
+              console.log('Unexpected failure:', error);
+              return message.reply(`Niestety mamy jakiś problem z przetworzeniem twojego raportu. Daj nam znać to spróbujemy to naprawić.`);
+          }
+        });
     })
     .catch((error) => {
       switch (error) {
-        case 'NoUserException':
-          return message.reply(`Hmm... mamy mały problem. Aby zacząc ćwiczyć razem z nami zarejestruj się najpierw używając komendy _!nowy-profil_.`)
-        case 'ReportAlreadyExistsException':
-          return message.reply(`Otrzymaliśmy już od Ciebie raport na dzień '${reportDate}'. Pamiętaj, że możesz wysyłać tylko jeden raport dziennie.`);
+        case 'NoSeasonStartedException':
+          return message.reply(`Nie rozpoczęliśmy jeszcze nowego sezonu. Poczekaj z raportami do nowego sezonu.`);
         default:
           console.log('Unexpected failure:', error);
           return message.reply(`Niestety mamy jakiś problem z przetworzeniem twojego raportu. Daj nam znać to spróbujemy to naprawić.`);
       }
     });
 
-  async function saveReport(db, username, reportDate, newReport) {
+
+  async function saveReport(db, username, seasonId, reportDate, newReport) {
     let user = null;
     let exception = null;
     const promises = [];
@@ -136,7 +149,7 @@ module.exports = (db, admin, message, args) => {
         .then(async () => {
           await user.awardNewBadges(db, admin, newReport)
             .then(async (badgesAwarded) => {
-              await user.addNewReport(db, admin, reportDate, newReport, badgesAwarded)
+              await user.addNewReport(db, admin, seasonId, reportDate, newReport, badgesAwarded)
                 .then((writeResult) => {
 
                   const replyMessage = `Nieźle  :boar:  ! Dziękujemy za raport na dzień '${reportDate}'

@@ -23,19 +23,25 @@ fs.readdir("./events/", (err, files) => {
   })
 })
 
-client.login(process.env.BOT_TOKEN)
+client.login(process.env.BOT_TOKEN).then(() => {
 
-let checkedAlready = false;
-const intervalObj = client.setInterval(() => {
-  const currentDateTime = new Date();
-  console.log(`[${currentDateTime.toString()}] Running interval with checkedAlready=${checkedAlready}`);
-  // 0 - Sunday, 5 - Friday
-  const dayOfWeek = currentDateTime.getDay();
-  if (!checkedAlready && dayOfWeek == 4) {
-    client.emit('checkForWeeklyAwards');
-    checkedAlready = true;
-  } else if (dayOfWeek != 3) {
-    checkedAlready = false;
-  }
-  
-}, 3600000, checkedAlready);
+  const interval = 600000; // 600000 - 10min, 3600000 - 1h;
+  const checkOnDay = 5;
+  const channelName = 'cwiczymy-razem';
+  let checkedAlready = false;
+
+  const intervalObj = client.setInterval(() => {
+    const currentDateTime = new Date();
+    console.log(`[${currentDateTime.toString()}] Running interval with checkedAlready=${checkedAlready}`);
+    // 0 - Sunday, 5 - Friday
+    const dayOfWeek = currentDateTime.getDay();
+    if (!checkedAlready && dayOfWeek == checkOnDay) {
+      client.emit('checkForWeeklyAwards', channelName);
+      checkedAlready = true;
+    } else if (dayOfWeek != checkOnDay) {
+      checkedAlready = false;
+    }
+    
+  }, interval, checkedAlready);  
+})
+

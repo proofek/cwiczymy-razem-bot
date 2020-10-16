@@ -15,15 +15,12 @@ class User {
   sluch = 0;
   teoria = 0;
   dodatkowePunkty = 0;
+  pointsThisSeason = 0;
 
   report = [];
   badges = []
 
   constructor() {
-  }
-
-  get pointThisSeason() {
-    return +this.technika + +this.sluch + +this.teoria + +this.dodatkowePunkty;
   }
 
   get fullname() {
@@ -67,6 +64,7 @@ class User {
     user.sluch = (userDoc.get('listening') || 0);
     user.teoria = (userDoc.get('theory') || 0);
     user.dodatkowePunkty = (userDoc.get('additionalPoints') || 0);
+    user.pointsThisSeason = (userDoc.get('pointsThisSeason') || 0);
     user.report = new Report();
 
     return user;
@@ -75,7 +73,7 @@ class User {
   evalRank(punktySezon = null) {
     
     if (!punktySezon) {
-      punktySezon = this.pointThisSeason;
+      punktySezon = this.pointsThisSeason;
     }
 
     let rank = 1;
@@ -106,7 +104,7 @@ class User {
     return rank;
   }
 
-  async addNewReport(db, admin, reportDate, newReport, badgesAwarded) {
+  async addNewReport(db, admin, seasonId, reportDate, newReport, badgesAwarded) {
 
     console.log('nowe odznaki', badgesAwarded);
 
@@ -135,7 +133,8 @@ class User {
         listening: admin.firestore.FieldValue.increment(sluchPunkty),
         theory: admin.firestore.FieldValue.increment(teoriaPunkty),
         additionalPoints: admin.firestore.FieldValue.increment(additionalPoints),
-        level: this.evalRank(+this.pointThisSeason + +nowePunkty)
+        pointsThisSeason: admin.firestore.FieldValue.increment(nowePunkty),
+        level: this.evalRank(+this.pointsThisSeason + +nowePunkty)
       });
 
       badgesAwarded.forEach(async (badgeId) => {
@@ -144,9 +143,10 @@ class User {
           name: badgeId,
           dateAdded: Date.now(),
           dateRevoked: null,
+          revoked: false
         });
       });
-
+    
       return true;
     });
 
@@ -170,7 +170,7 @@ class User {
       listening: admin.firestore.FieldValue.increment(sluchPunkty),
       theory: admin.firestore.FieldValue.increment(teoriaPunkty),
       additionalPoints: admin.firestore.FieldValue.increment(additionalPoints),
-      level: this.evalRank(+this.pointThisSeason + +nowePunkty)
+      level: this.evalRank(+this.pointsThisSeason + +nowePunkty)
     });
   }
 
@@ -225,25 +225,28 @@ class User {
   async fetchBadges(db) {
     const badgesPromises = [];
 
-    const badgeQuery = await db.collection('results').doc(this.id).collection("badges").get();
+    const badgeQuery = await db.collection('results').doc(this.id).collection("badges")
+      .where("revoked", '==', false)
+      .get();
     badgeQuery.forEach((badgeFound) => {
-      console.log('Fetching async badge ' + badgeFound.id);
       badgesPromises.push(Badge.fetchBadge(db, badgeFound.id));
     });
 
     return Promise.all(badgesPromises).then((badges) => {
-      console.log('Resolved all badges');
       badges.forEach((badge) => {
         this.addBadge(badge);
       });
 
     });
-    //return await db.collection('results').doc(this.id).collection("badges").get();
   }
 
   // Give user new badges if they earned it
   async awardNewBadges(db, admin, newReport) {
     let newBadges = [];
+    const newTimeTotal = +this.timeTotal + +newReport.czas;
+    const newPointsTechnical = +this.technika + +newReport.technika;
+    const newPointsListening = +this.sluch + +newReport.sluch;
+    const newPointsTheory = +this.teoria + +newReport.teoria;
 
     // Zaklinacz czasu
     if ((+newReport.czas >= 5) && !this.findBadgeById("Zaklinacz czasu").length ) {
@@ -252,20 +255,20 @@ class User {
     }
     
     // 50H
-    if ((+this.timeTotal >= 50) && !this.findBadgeById("50H").length ) {
+    if ((newTimeTotal >= 50) && !this.findBadgeById("50H").length ) {
       console.log(`Awarding 50H`)
       newBadges.push("50H");
     }
 
     // 100H
-    if ((+this.timeTotal >= 100) && !this.findBadgeById("100H").length ) {
+    if ((newTimeTotal >= 100) && !this.findBadgeById("100H").length ) {
       console.log(`Awarding 100H`)
       newBadges.push("100H");
     }
 
     // Równowaga
-    if ((+this.technika >= 20) && (+this.sluch >= 20) && (+this.teoria >= 20)
-      && (+this.technika == +this.sluch) && (+this.sluch == +this.teoria)
+    if ((newPointsTechnical >= 20) && (newPointsListening >= 20) && (newPointsTheory >= 20)
+      && (newPointsTechnical == newPointsListening) && (newPointsListening == newPointsTheory)
       && !this.findBadgeById("Równowaga").length) {
       console.log(`Awarding Równowaga`)
       newBadges.push("Równowaga");
@@ -340,6 +343,124 @@ class User {
     return new Promise(resolve => {
       resolve(newBadges)
     });
+  }
+
+  static async findUserWithLeaderAward(db) {
+    const badgeName = 'Lider';
+    let ownerRef = null;
+    let owner = null;
+
+    const leaderBadgeQuery = await db.collectionGroup('badges')
+      .where("name", '==', badgeName)
+      .where("revoked", '==', false)
+      .get();
+
+    leaderBadgeQuery.forEach((badgeFound) => {
+      ownerRef = badgeFound.ref.parent.parent;
+    });
+
+    if (ownerRef) {
+      const ownerFound = await ownerRef.get();
+      owner = User.fromFirebaseDoc(ownerFound);
+    }
+
+    return new Promise(resolve => {
+      resolve(owner)
+    });
+  }
+
+  static async findUserWithStarAward(db) {
+    let ownerRef = null;
+    let owner = null;
+
+    const starBadgeQuery = await db.collectionGroup('badges')
+      .where("name", '==', Badge.BADGE_STAROFTHEWEEK)
+      .where("revoked", '==', false)
+      .get();
+
+    starBadgeQuery.forEach((badgeFound) => {
+      ownerRef = badgeFound.ref.parent.parent;
+    });
+
+    if (ownerRef) {
+      const ownerFound = await ownerRef.get();
+      owner = User.fromFirebaseDoc(ownerFound);
+    }
+
+    return new Promise(resolve => {
+      resolve(owner)
+    });
+  }
+
+  async revokeBadge(db, badgeId) {
+    const badgeRevoked = await db.collection('results').doc(this.id).collection("badges").doc(badgeId).update({
+      revoked: true,
+      dateRevoked: new Date()
+    });
+
+    console.log(badgeRevoked);
+  }
+
+  async awardBadge(db, badgeId) {
+    const badgeAwarded = await db.collection('results').doc(this.id).collection("badges").doc(badgeId).set({
+      name: badgeId,
+      dateAdded: Date.now(),
+      revoked: false,
+      dateRevoked: null,
+    });
+
+    console.log(badgeAwarded);
+  }
+
+  static async findLeader(db) {
+    let leader = null;
+
+    // Znajdź aktualnego lidera
+    const leaderQuery = await db.collection('results')
+      .where('removed', '==', false)
+      .orderBy("pointsThisSeason", "desc")
+      .limit(1)
+      .get();
+
+    leaderQuery.forEach((leaderFound) => {
+      leader = User.fromFirebaseDoc(leaderFound);
+    });
+
+    return new Promise(resolve => {
+      resolve(leader)
+    });
+  }
+
+  static async findStarOfTheWeek(db) {
+    let starOfTheWeek = null;
+
+    // Znajdź aktualnego lidera
+    const starOfTheWeekQuery = await db.collection('results')
+      .where('removed', '==', false)
+      .orderBy("additionalPoints", "desc")
+      .limit(1)
+      .get();
+
+    starOfTheWeekQuery.forEach((starFound) => {
+      starOfTheWeek = User.fromFirebaseDoc(starFound);
+    });
+
+    return new Promise(resolve => {
+      resolve(starOfTheWeek)
+    });
+  }
+
+  static getDiscordUser(client, user) {
+    const discordTag = user.discordTag.split('#');
+    let discordUser = null;
+
+    if (discordTag.length == 2) {
+      discordUser = client.users.cache.find(user => (user.username === discordTag[0] && user.discriminator === discordTag[1]));
+    } else {
+      discordUser = user.discordTag;
+    }
+
+    return discordUser;
   }
 }
 

@@ -45,11 +45,23 @@ class Season {
 	}
 
 	static async findCurrentSeason(db) {
-		return await db.collection('seasons')
-			.where('startDate', '<=', Date.now())
-			.orderBy('startDate', 'desc')
-			.limit(1)
-			.get();
+		let season = null;
+		const currentSeasonQuery = await db.collection('seasons').where('startDate', '<=', Date.now()).orderBy('startDate', 'desc').limit(1).get();
+
+		if (currentSeasonQuery.empty) {
+			throw 'NoSeasonStartedException';
+    }
+
+		currentSeasonQuery.forEach((seasonFound) => {
+			season = Season.fromFirebaseDoc(seasonFound);
+			if (Date.parse(season.endDate) < Date.now()) {
+				throw 'NoSeasonStartedException';
+			}
+		});
+
+    return new Promise((resolve) => {
+      resolve(season)
+    });
 	}
 
 	static async findNextSeason(db) {

@@ -32,35 +32,27 @@ module.exports = (db, admin, message, args) => {
         nextSeason = Season.fromFirebaseDoc(nextSeasonFound);
       });
 
-      Season.findCurrentSeason(db).then(function(currentSeasonQuery) {
-        const cwiczymyrazemChannel = message.guild.channels.cache.find(channel => channel.name === "cwiczymy-razem");
-        let noSeasonMessage = `Cierpliwości  :boar:  . Na razie nie ćwiczymy. Szukaj informacji na temat kolejnego sezonu na kanale ${(cwiczymyrazemChannel) ? cwiczymyrazemChannel.toString() : '#cwiczymy-razem'}.`;
-        let replyMessage = null;
+      const cwiczymyrazemChannel = message.guild.channels.cache.find(channel => channel.name === "cwiczymy-razem");
+      let noSeasonMessage = `Cierpliwości  :boar:  . Na razie nie ćwiczymy. Szukaj informacji na temat kolejnego sezonu na kanale ${(cwiczymyrazemChannel) ? cwiczymyrazemChannel.toString() : '#cwiczymy-razem'}.`;
 
-        if (currentSeasonQuery.empty) {
-          replyMessage = noSeasonMessage;
-          if (nextSeason) {
-            replyMessage = replyMessage + ` Sezon ${nextSeason.number} rozpocznie się ${nextSeason.startDate}.`
-          }
-          return message.reply(replyMessage)
-        }
-
-        currentSeasonQuery.forEach((currentSeasonFound) => {
-          const currentSeason = Season.fromFirebaseDoc(currentSeasonFound);
-          currentSeason.fetchWinners(db, admin).then(() => {
-            if (Date.parse(currentSeason.endDate) < Date.now()) {
-              replyMessage = noSeasonMessage;
-              if (nextSeason) {
-                replyMessage = replyMessage + ` Sezon ${currentSeason.number} już się zakończył, a sezon ${nextSeason.number} rozpocznie się ${nextSeason.startDate}.`
-              }
-              return message.reply(replyMessage)
-            }
-
-            embededMessage = chatMessage.createSeasonStatusEmbedMessage(currentSeason);
+      Season.findCurrentSeason(db)
+        .then((season) => {
+          let replyMessage = null;
+          season.fetchWinners(db, admin).then(() => {
+            embededMessage = chatMessage.createSeasonStatusEmbedMessage(season);
             return message.reply({ embed: embededMessage });
           });
         })
-      });
+        .catch((error) => {
+          if (error == 'NoSeasonStartedException') {
+            replyMessage = noSeasonMessage;
+            if (nextSeason) {
+              replyMessage = replyMessage + ` Sezon ${nextSeason.number} rozpocznie się ${nextSeason.startDate}.`
+            }
+            return message.reply(replyMessage)
+          }
+          return message.reply(`Niestety mamy jakiś problem ze znalezieniem informacji na temat sezonów. Daj nam znać to spróbujemy to naprawić.`);
+        });
     });
   }
 

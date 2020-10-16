@@ -29,7 +29,7 @@ class discordMessage {
               	},
               	{
                		name: 'Ilość punktów w tym sezonie',
-                	value: user.pointThisSeason,
+                	value: user.pointsThisSeason,
                 	inline: true,
               	},
               	{
@@ -84,7 +84,7 @@ class discordMessage {
               	},
               	{
                		name: 'Ilość punktów w tym sezonie',
-                	value: user.pointThisSeason,
+                	value: user.pointsThisSeason,
                 	inline: true,
               	},
               	{
