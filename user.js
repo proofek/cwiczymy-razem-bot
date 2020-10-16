@@ -99,6 +99,38 @@ class User {
       rank = 11;
     } else if (punktySezon >= 110 && punktySezon < 120) {
       rank = 12;
+    } else if (punktySezon >= 120 && punktySezon < 130) {
+      rank = 13;
+    } else if (punktySezon >= 130 && punktySezon < 140) {
+      rank = 14;
+    } else if (punktySezon >= 140 && punktySezon < 150) {
+      rank = 15;
+    } else if (punktySezon >= 150 && punktySezon < 160) {
+      rank = 16;
+    } else if (punktySezon >= 160 && punktySezon < 170) {
+      rank = 17;
+    } else if (punktySezon >= 170 && punktySezon < 180) {
+      rank = 18;
+    } else if (punktySezon >= 180 && punktySezon < 190) {
+      rank = 19;
+    } else if (punktySezon >= 190 && punktySezon < 200) {
+      rank = 20;
+    } else if (punktySezon >= 200 && punktySezon < 210) {
+      rank = 21;
+    } else if (punktySezon >= 210 && punktySezon < 220) {
+      rank = 22;
+    } else if (punktySezon >= 220 && punktySezon < 230) {
+      rank = 23;
+    } else if (punktySezon >= 230 && punktySezon < 240) {
+      rank = 24;
+    } else if (punktySezon >= 240 && punktySezon < 250) {
+      rank = 25;
+    } else if (punktySezon >= 250 && punktySezon < 260) {
+      rank = 26;
+    } else if (punktySezon >= 260 && punktySezon < 270) {
+      rank = 27;
+    } else if (punktySezon >= 280) {
+      rank = 28;
     }
 
     return rank;
@@ -247,22 +279,21 @@ class User {
     const newPointsTechnical = +this.technika + +newReport.technika;
     const newPointsListening = +this.sluch + +newReport.sluch;
     const newPointsTheory = +this.teoria + +newReport.teoria;
+    const newAdditionalPoints = +this.dodatkowePunkty + ((newReport.dokument) ? 1 : 0);
+    const newTotalPoints = newPointsTechnical + newPointsListening + newPointsTheory + newAdditionalPoints;
 
     // Zaklinacz czasu
     if ((+newReport.czas >= 5) && !this.findBadgeById("Zaklinacz czasu").length ) {
-      console.log(`Awarding Zaklinacz czasu`)
       newBadges.push("Zaklinacz czasu");
     }
     
     // 50H
     if ((newTimeTotal >= 50) && !this.findBadgeById("50H").length ) {
-      console.log(`Awarding 50H`)
       newBadges.push("50H");
     }
 
     // 100H
     if ((newTimeTotal >= 100) && !this.findBadgeById("100H").length ) {
-      console.log(`Awarding 100H`)
       newBadges.push("100H");
     }
 
@@ -270,8 +301,12 @@ class User {
     if ((newPointsTechnical >= 20) && (newPointsListening >= 20) && (newPointsTheory >= 20)
       && (newPointsTechnical == newPointsListening) && (newPointsListening == newPointsTheory)
       && !this.findBadgeById("Równowaga").length) {
-      console.log(`Awarding Równowaga`)
       newBadges.push("Równowaga");
+    }
+
+    // Diamentowa gitara
+    if (this.evalRank(newTotalPoints) >= 28) {
+      newBadges.push(Badge.BADGE_DIAMONDGUITAR);
     }
 
     // Mądrala
