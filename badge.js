@@ -10,6 +10,7 @@ class Badge {
 
   static BADGE_LEADER = "Lider";
   static BADGE_STAROFTHEWEEK = "Gwiazda Tygodnia";
+  static BADGE_DIAMONDGUITAR = "Diamentowa gitara";
 
   constructor() {
   }
