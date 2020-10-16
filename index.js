@@ -30,6 +30,7 @@ client.login(process.env.BOT_TOKEN).then(() => {
   const channelName = 'cwiczymy-razem';
   let checkedAlready = false;
 
+  console.log(`Ustawiam sprawdzanie przyznawania odznak. Dzień=${checkOnDay}, co ${interval / 60000}`);
   const intervalObj = client.setInterval(() => {
     const currentDateTime = new Date();
     console.log(`[${currentDateTime.toString()}] Running interval with checkedAlready=${checkedAlready}`);

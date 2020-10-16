@@ -40,8 +40,10 @@ module.exports = (client, db, admin, channelName) => {
                       if (currentOwner.id != leader.id) {
                         leader.awardBadge(db, Badge.BADGE_LEADER)
                           .then((writeResult) => {
-                            console.log(`Przyznajemy odznakę graczowi '${leader.fullname}'.`);
+                            console.log(`Przyznajemy odznakę '${Badge.BADGE_LEADER}' graczowi '${leader.fullname}'.`);
                             channel.send(`Gratulacje ${User.getDiscordUser(client, leader)}! Zostajesz nowym liderem w tym tygodniu! :clap: :champagne:`);
+                            embededMessage = chatMessage.createNewBadgeEmbedMessage(leader, leaderBadge);
+                            channel.send({ embed: embededMessage });
                           });
                       }
                     }            
@@ -49,8 +51,10 @@ module.exports = (client, db, admin, channelName) => {
                     console.log(`Nikt nie posiada jeszcze odznaki Lidera`);
                     leader.awardBadge(db, Badge.BADGE_LEADER)
                       .then((writeResult) => {
-                        console.log(`Przyznajemy odznakę graczowi '${leader.fullname}'.`);
+                        console.log(`Przyznajemy odznakę '${Badge.BADGE_LEADER}' graczowi '${leader.fullname}'.`);
                         channel.send(`Gratulacje ${User.getDiscordUser(client, leader)}! Zostajesz nowym liderem w tym tygodniu! :clap: :champagne:`);
+                        embededMessage = chatMessage.createNewBadgeEmbedMessage(leader, leaderBadge);
+                        channel.send({ embed: embededMessage });
                       });
                   }
                 })
@@ -92,6 +96,8 @@ module.exports = (client, db, admin, channelName) => {
                             .then((writeResult) => {
                               console.log(`Przyznajemy odznakę '${Badge.BADGE_STAROFTHEWEEK}' graczowi '${starOfTheWeek.fullname}'.`);
                               channel.send(`Gratulacje ${User.getDiscordUser(client, starOfTheWeek)}! Zostajesz nową Gwiazdą Tygodnia! :clap: :champagne:`);
+                              embededMessage = chatMessage.createNewBadgeEmbedMessage(starOfTheWeek, starBadge);
+                              channel.send({ embed: embededMessage });
                             });
                         }
                       }  
@@ -101,6 +107,8 @@ module.exports = (client, db, admin, channelName) => {
                         .then((writeResult) => {
                           console.log(`Przyznajemy odznakę '${Badge.BADGE_STAROFTHEWEEK}' graczowi '${starOfTheWeek.fullname}'.`);
                           channel.send(`Gratulacje ${User.getDiscordUser(client, starOfTheWeek)}! Zostajesz nową Gwiazdą Tygodnia! :clap: :champagne:`);
+                          embededMessage = chatMessage.createNewBadgeEmbedMessage(starOfTheWeek, starBadge);
+                          channel.send({ embed: embededMessage });
                         });
                     }
                   });
