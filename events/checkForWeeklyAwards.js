@@ -1,3 +1,8 @@
+/**
+ * Checks currents stats to award new badges
+ *  * Lider
+ *  * Diamentowa gitara
+ */
 module.exports = (client, db, admin, channelName) => {
   const Season = require("../season.js")
   const User = require("../user.js")

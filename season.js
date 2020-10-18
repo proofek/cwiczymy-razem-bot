@@ -34,7 +34,7 @@ class Season {
 	async findWiners(db, admin) {
 		const seasonId = "sezon" + this.number;
 		return await db.collection('seasons').doc(seasonId).collection('winners')
-			.orderBy(admin.firestore.FieldPath.documentId(), 'asc')
+			.orderBy('position', 'asc')
 			.get();
 	}
 

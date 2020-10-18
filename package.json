@@ -1,6 +1,6 @@
 {
   "name": "cwiczymy-razem-bot",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Bot discorda do rejestrowania postępów w zabawie Ćwiczymy Razem z Bazokiem",
   "main": "index.js",
   "scripts": {
@@ -20,6 +20,7 @@
     "get-urls": "^10.0.0"
   },
   "devDependencies": {
+    "jasmine": "^3.6.2",
     "nodemon": "^2.0.4"
   }
 }
