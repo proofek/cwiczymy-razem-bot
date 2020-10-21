@@ -283,29 +283,29 @@ class User {
     const newTotalPoints = newPointsTechnical + newPointsListening + newPointsTheory + newAdditionalPoints;
 
     // Zaklinacz czasu
-    if ((+newReport.czas >= 5) && !this.findBadgeById("Zaklinacz czasu").length ) {
-      newBadges.push("Zaklinacz czasu");
+    if ((+newReport.czas >= 5) && !this.findBadgeById(Badge.BADGE_ZAKLINACZCZASU).length ) {
+      newBadges.push(Badge.BADGE_ZAKLINACZCZASU);
     }
     
     // Weteran
-    if ((newTimeTotal >= 30) && !this.findBadgeById("Weteran").length ) {
-      newBadges.push("Weteran");
+    if ((newTimeTotal >= 30) && !this.findBadgeById(Badge.BADGE_VETERAN).length ) {
+      newBadges.push(Badge.BADGE_VETERAN);
     }
 
     // Gitarowy Ninja
-    if ((newTimeTotal >= 50) && !this.findBadgeById("Gitarowy Ninja").length ) {
-      newBadges.push("Gitarowy Ninja");
+    if ((newTimeTotal >= 50) && !this.findBadgeById(Badge.BADGE_GUITARNINJA).length ) {
+      newBadges.push(Badge.BADGE_GUITARNINJA);
     }
 
     // Równowaga
-    if ((newPointsTechnical >= 20) && (newPointsListening >= 20) && (newPointsTheory >= 20)
+    if ((newPointsTechnical >= 10) && (newPointsListening >= 10) && (newPointsTheory >= 10)
       && (newPointsTechnical == newPointsListening) && (newPointsListening == newPointsTheory)
-      && !this.findBadgeById("Równowaga").length) {
-      newBadges.push("Równowaga");
+      && !this.findBadgeById(Badge.BADGE_ROWNOWAGA).length) {
+      newBadges.push(Badge.BADGE_ROWNOWAGA);
     }
 
     // Diamentowa gitara
-    if (this.evalRank(newTotalPoints) >= 28) {
+    if (this.evalRank(newTotalPoints) >= 28 && !this.findBadgeById(Badge.BADGE_DIAMONDGUITAR).length) {
       newBadges.push(Badge.BADGE_DIAMONDGUITAR);
     }
 
@@ -352,13 +352,12 @@ class User {
     });
   }
 
-  async checkTheoryMasterAward(db, newReport, points = 50) {
-    const badgeName = 'Mądrala';
+  async checkTheoryMasterAward(db, newReport, points = 30) {
     const newBadges = [];
-    const theoryMasterQuery = await db.collectionGroup('badges').where("name", '==', badgeName).get();
+    const theoryMasterQuery = await db.collectionGroup('badges').where("name", '==', Badge.BADGE_MADRALA).get();
 
-    if (theoryMasterQuery.empty && ((+this.teoria + newReport.teoria) >= 50) && !this.findBadgeById(badgeName).length) {
-      newBadges.push(badgeName);
+    if (theoryMasterQuery.empty && ((+this.teoria + newReport.teoria) >= points) && !this.findBadgeById(Badge.BADGE_MADRALA).length) {
+      newBadges.push(Badge.BADGE_MADRALA);
     }
 
     return new Promise(resolve => {
@@ -366,13 +365,12 @@ class User {
     });
   }
 
-  async checkTechnicalMasterAward(db, newReport, points = 50) {
-    const badgeName = 'Siłacz';
+  async checkTechnicalMasterAward(db, newReport, points = 30) {
     const newBadges = [];
-    const technicalMasterQuery = await db.collectionGroup('badges').where("name", '==', badgeName).get();
+    const technicalMasterQuery = await db.collectionGroup('badges').where("name", '==', Badge.BADGE_SILACZ).get();
 
-    if (technicalMasterQuery.empty && ((+this.technika + newReport.technika) >= 50) && !this.findBadgeById(badgeName).length) {
-      newBadges.push(badgeName);
+    if (technicalMasterQuery.empty && ((+this.technika + newReport.technika) >= points) && !this.findBadgeById(Badge.BADGE_SILACZ).length) {
+      newBadges.push(Badge.BADGE_SILACZ);
     }
 
     return new Promise(resolve => {
