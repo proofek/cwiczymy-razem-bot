@@ -292,9 +292,9 @@ class User {
       newBadges.push("Weteran");
     }
 
-    // 100H
-    if ((newTimeTotal >= 100) && !this.findBadgeById("100H").length ) {
-      newBadges.push("100H");
+    // Gitarowy Ninja
+    if ((newTimeTotal >= 50) && !this.findBadgeById("Gitarowy Ninja").length ) {
+      newBadges.push("Gitarowy Ninja");
     }
 
     // Równowaga
