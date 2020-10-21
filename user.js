@@ -287,9 +287,9 @@ class User {
       newBadges.push("Zaklinacz czasu");
     }
     
-    // 50H
-    if ((newTimeTotal >= 50) && !this.findBadgeById("50H").length ) {
-      newBadges.push("50H");
+    // Weteran
+    if ((newTimeTotal >= 30) && !this.findBadgeById("Weteran").length ) {
+      newBadges.push("Weteran");
     }
 
     // 100H
