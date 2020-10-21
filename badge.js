@@ -1,6 +1,7 @@
 class Badge {
 
   id = null;
+  name = null;
   description = null;
   removed = false;
   badge = null;
@@ -44,6 +45,7 @@ class Badge {
   static fromFirebaseDoc(badgeDoc) {
     let badge = new Badge();
     badge.id = badgeDoc.id;
+    badge.name = (badgeDoc.get('name') || '');
     badge.description = (badgeDoc.get('desc') || 'Brak opisu');
     badge.removed = badgeDoc.get('removed');
     badge.badge = (badgeDoc.get('badge') || 'Brak ikony odznaki');
