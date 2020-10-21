@@ -12,6 +12,12 @@ class Badge {
   static BADGE_LEADER = "Lider";
   static BADGE_STAROFTHEWEEK = "Gwiazda Tygodnia";
   static BADGE_DIAMONDGUITAR = "Diamentowa gitara";
+  static BADGE_MADRALA = "Mądrala";
+  static BADGE_SILACZ = "Siłacz";
+  static BADGE_ROWNOWAGA = "Równowaga";
+  static BADGE_GUITARNINJA = "Gitarowy Ninja";
+  static BADGE_VETERAN = "Weteran";
+  static BADGE_ZAKLINACZCZASU = "Zaklinacz czasu";
 
   constructor() {
   }
