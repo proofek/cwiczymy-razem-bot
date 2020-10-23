@@ -18,6 +18,9 @@ class Badge {
   static BADGE_GUITARNINJA = "Gitarowy Ninja";
   static BADGE_VETERAN = "Weteran";
   static BADGE_ZAKLINACZCZASU = "Zaklinacz czasu";
+  static BADGE_ADEPTTECHNIKI = "Adept Techniki";
+  static BADGE_ADEPTTEORIIMUZYKI = "Adept Teorii Muzyki";
+  static BADGE_CZULYSLUCH = "Czuły Słuch";
 
   constructor() {
   }
