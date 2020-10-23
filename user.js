@@ -268,6 +268,7 @@ class User {
         this.addBadge(badge);
       });
 
+      return this;
     });
   }
 
@@ -487,6 +488,37 @@ class User {
     });
   }
 
+  async weeklyReportStats(db, dateFrom) {
+    const weeklyStats = new Object();
+    let theoryPoints = 0;
+    let listeningPoints = 0;
+    let technicalPoints = 0;
+    const reportsSnapshot = await db.collection('results').doc(this.id).collection("raporty")
+      .where('date', '>=', Date.parse(dateFrom))
+      .orderBy("date", "asc")
+      .get();
+    
+
+    reportsSnapshot.docs.forEach((reportFound, index) => {
+      const report = {
+          id: reportFound.id,
+          ...reportFound.data()
+      }
+
+      theoryPoints = theoryPoints + ((report.teoria) ? report.teoria : 0);
+      listeningPoints = listeningPoints + ((report.sluch) ? report.sluch : 0);
+      technicalPoints = technicalPoints + ((report.technika) ? report.technika : 0);
+    });
+
+    weeklyStats.theoryPoints = theoryPoints;
+    weeklyStats.listeningPoints = listeningPoints;
+    weeklyStats.technicalPoints = technicalPoints;
+
+    return new Promise(resolve => {
+      resolve(weeklyStats)
+    });
+  }
+
   async awardBonusBoints(db, admin, bonusPoints) {
     return await db.collection('results').doc(this.id).update({
       additionalPoints: admin.firestore.FieldValue.increment(bonusPoints),
@@ -548,16 +580,18 @@ class User {
 
   static async getAllUsers(db) {
     let users = [];
+    let userBadgesPromises = [];
     const allUsersQuery = await db.collection('results')
       .where('removed', '==', false)
       .get();
 
-    allUsersQuery.forEach((userFound) => {
-      users.push(User.fromFirebaseDoc(userFound));
+    allUsersQuery.forEach(async (userFound) => {
+      const user = User.fromFirebaseDoc(userFound);
+      userBadgesPromises.push(user.fetchBadges(db));     
     });
 
-    return new Promise(resolve => {
-      resolve(users)
+    return Promise.all(userBadgesPromises).then((users) => {
+      return users;
     });
   }
 }
