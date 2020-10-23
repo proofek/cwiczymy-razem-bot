@@ -126,6 +126,56 @@ module.exports = (client, db, admin, channelName) => {
                 console.log(`[ERROR:checkForWeeklyAwards-User.findStarOfTheWeek] Niestety mamy jakiś problem. Daj nam znać to spróbujemy to naprawić.`, error);
             }
           });
+
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() ));
+        const todayDay = today.getDay();
+        let lastMonday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() ));
+        if (todayDay == 0) {
+          lastMonday.setDate(today.getDate() - 6);
+        } else {
+          lastMonday.setDate(today.getDate() - (todayDay - 1));
+        }
+
+        console.log(`Przyznaje dodatkowe punkty za składanie raportów od ${lastMonday.toUTCString()} do ${today.toUTCString()}!`)
+        User.getAllUsers(db)
+          .then((users) => {
+            users.forEach((user) => {
+              let bonusPoints = 0;
+              user.checkForConsecutiveReports(db, lastMonday)
+                .then((reportsNumber) => {
+                  console.log(`Ilość raportów dla ${user.fullname}: ${reportsNumber}`);
+                  if (reportsNumber >= 3) {
+                    bonusPoints++;
+                    embededMessage = chatMessage.createPrizeEmbedMessage(user, 'Zdobywasz 1 dodatkowy punkt za wysłanie 3 raportów z rzędu w tym tygodniu!')
+                    channel.send({ embed: embededMessage });
+                  }
+                  if (reportsNumber >= 5) {
+                    bonusPoints++;
+                    embededMessage = chatMessage.createPrizeEmbedMessage(user, 'Zdobywasz 1 dodatkowy punkt za wysłanie 5 raportów z rzędu w tym tygodniu!')
+                    channel.send({ embed: embededMessage });
+                  }
+                  if (reportsNumber === 7) {
+                    bonusPoints = bonusPoints + 2;
+                    embededMessage = chatMessage.createPrizeEmbedMessage(user, 'Zdobywasz 2 dodatkowe punkty za wysłanie raportu każdego dnia w tym tygodniu!')
+                    channel.send({ embed: embededMessage });
+                  }
+                  if (bonusPoints > 0) {
+                    user.awardBonusBoints(db, admin, bonusPoints)
+                      .then((writeResult) => {
+                        console.log(`Przyznajemy ${bonusPoints} dodatkowe punkty graczowi '${user.fullname}'.`);
+                      });
+                  }
+                });
+            });
+          })
+          .catch((error) => {
+            switch (error) {
+              default:
+                console.log(`[ERROR:checkForWeeklyAwards-User.getAllUsers] Niestety mamy jakiś problem. Daj nam znać to spróbujemy to naprawić.`, error);
+            }
+          });
+
     })
     .catch((error) => {
       switch (error) {
@@ -135,4 +185,5 @@ module.exports = (client, db, admin, channelName) => {
           console.log(`[ERROR:checkForWeeklyAwards-Season.findCurrentSeason] Niestety mamy jakiś problem. Daj nam znać to spróbujemy to naprawić.`, error);
       }
     });
+
 }

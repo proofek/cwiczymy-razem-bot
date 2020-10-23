@@ -196,6 +196,23 @@ class discordMessage {
     return embededMessage;
   }
 
+  createPrizeEmbedMessage(user, description) {
+    const embededMessage = {
+      color: 0x0099ff,
+      title: `Nagroda dla ${user.fullname}`,
+      description: description,
+      thumbnail: {
+          url: 'https://www.emoji.co.uk/files/phantom-open-emojis/objects-phantom/12859-wrapped-present.png',
+      },
+      timestamp: new Date(),
+      footer: {
+          text: 'Ćwiczymy razem z Bazokiem',
+          icon_url: 'https://cdn.discordapp.com/attachments/654713734845038624/723247496926724227/bazok_color.png',
+      },
+    }
+
+    return embededMessage;
+  }
 }
 
 module.exports = discordMessage;

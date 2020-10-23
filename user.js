@@ -138,13 +138,12 @@ class User {
 
   async addNewReport(db, admin, seasonId, reportDate, newReport, badgesAwarded) {
 
-    console.log('nowe odznaki', badgesAwarded);
-
     const res = await db.runTransaction(async t => {
       const resultRef = db.collection('results').doc(this.id);
       const reportRef = resultRef.collection("raporty").doc(reportDate);
 
       await t.set(reportRef, {
+        date: Date.parse(reportDate),
         sluch: newReport.sluch,
         technika: newReport.technika,
         teoria: newReport.teoria,
@@ -430,8 +429,6 @@ class User {
       revoked: true,
       dateRevoked: new Date()
     });
-
-    console.log(badgeRevoked);
   }
 
   async awardBadge(db, badgeId) {
@@ -441,8 +438,59 @@ class User {
       revoked: false,
       dateRevoked: null,
     });
+  }
 
-    console.log(badgeAwarded);
+  async checkForConsecutiveReports(db, dateFrom) {
+    let consecutiveReports = [];
+    const reportsSnapshot = await db.collection('results').doc(this.id).collection("raporty")
+      .where('date', '>=', Date.parse(dateFrom))
+      .orderBy("date", "asc")
+      .get();
+
+    if (reportsSnapshot.empty) {
+      consecutiveReports.push(0);
+    } else {
+        let lastReportDate = null;
+        let consecutiveReport = 0;
+
+        reportsSnapshot.docs.forEach((reportFound, index) => {
+          const report = {
+            id: reportFound.id,
+            ...reportFound.data()
+          }
+          const reportDate = new Date(report.date);
+
+          if (lastReportDate) {
+            lastReportDate.setDate(lastReportDate.getDate() + 1);
+
+            if (lastReportDate.getTime() === reportDate.getTime()) {
+              consecutiveReport++;
+            } else {
+              consecutiveReports.push(consecutiveReport);
+              consecutiveReport = 1;  
+            }
+
+            lastReportDate = reportDate;
+          } else {
+            consecutiveReport = 1;
+            lastReportDate = reportDate;
+          }
+
+          if (index === reportsSnapshot.size - 1) {
+            consecutiveReports.push(consecutiveReport);
+          }
+        });
+    }
+
+    return new Promise(resolve => {
+      resolve(Math.max(...consecutiveReports))
+    });
+  }
+
+  async awardBonusBoints(db, admin, bonusPoints) {
+    return await db.collection('results').doc(this.id).update({
+      additionalPoints: admin.firestore.FieldValue.increment(bonusPoints),
+    });
   }
 
   static async findLeader(db) {
@@ -489,11 +537,28 @@ class User {
 
     if (discordTag.length == 2) {
       discordUser = client.users.cache.find(user => (user.username === discordTag[0] && user.discriminator === discordTag[1]));
-    } else {
+    } 
+
+    if (!discordUser) {
       discordUser = user.discordTag;
     }
 
     return discordUser;
+  }
+
+  static async getAllUsers(db) {
+    let users = [];
+    const allUsersQuery = await db.collection('results')
+      .where('removed', '==', false)
+      .get();
+
+    allUsersQuery.forEach((userFound) => {
+      users.push(User.fromFirebaseDoc(userFound));
+    });
+
+    return new Promise(resolve => {
+      resolve(users)
+    });
   }
 }
 

@@ -25,16 +25,16 @@ fs.readdir("./events/", (err, files) => {
 
 client.login(process.env.BOT_TOKEN).then(() => {
 
-  const interval = 600000; // 600000 - 10min, 3600000 - 1h;
-  const checkOnDay = 5;
-  const channelName = 'cwiczymy-razem';
+  const interval = 3600000; // 10000 -, 600000 - 10min, 3600000 - 1h;
+  const checkOnDay = 5; // 0 - Sunday, 5 - Friday
+  const channelName = 'cwiczymy-razem'; // test
   let checkedAlready = false;
 
   console.log(`Ustawiam sprawdzanie przyznawania odznak. Dzień=${checkOnDay}, co ${interval / 60000} min`);
   const intervalObj = client.setInterval(() => {
     const currentDateTime = new Date();
     console.log(`[${currentDateTime.toString()}] Running interval with checkedAlready=${checkedAlready}`);
-    // 0 - Sunday, 5 - Friday
+
     const dayOfWeek = currentDateTime.getDay();
     if (!checkedAlready && dayOfWeek == checkOnDay) {
       client.emit('checkForWeeklyAwards', channelName);

@@ -163,7 +163,7 @@ Przyznane punkty: technika ${newReport.technika}, słuch ${newReport.sluch}, teo
                         embededMessage = chatMessage.createNewBadgeEmbedMessage(user, badge);
                         return message.reply({ embed: embededMessage });
                       })
-                  })
+                  });
 
                   user.fetchUser(db)
                     .then((updatedUser) => {
