@@ -7,6 +7,7 @@ module.exports = (client, db, admin, channelName) => {
   const Season = require("../season.js")
   const User = require("../user.js")
   const Badge = require("../badge.js")
+  const cf = require("./common_functions.js")
 
   const discordMessage = require("../discordMessage")
   const chatMessage = new discordMessage();
@@ -17,6 +18,100 @@ module.exports = (client, db, admin, channelName) => {
   Season.findCurrentSeason(db)
     .then((season) => {
       console.log(`Sprawdzam odznaki na koniec tygodnia!`)
+
+      const lastMonday = cf.getLastMonday();
+      console.log(`Przyznaje dodatkowe punkty za składanie raportów od ${lastMonday.toUTCString()}!`)
+      let adeptTeoriiMuzykiBadge = null;
+      let adeptTechnikiBadge = null;
+      let czulySluchBadge = null;
+
+      User.getAllUsers(db)
+        .then((users) => {
+          users.forEach(async (user) => {
+            let bonusPoints = 0;
+            let bonusPointsMessage = '';
+
+            user.fetchBadges(db);              
+            const reportsNumber = await user.checkForConsecutiveReports(db, lastMonday)
+            console.log(`Ilość raportów dla ${user.fullname}: ${reportsNumber}`);
+            if (reportsNumber >= 3) {
+              bonusPoints++;
+              bonusPointsMessage = `${bonusPointsMessage}\nZdobywasz 1 dodatkowy punkt za wysłanie 3 raportów z rzędu w tym tygodniu!\n`
+            }
+            if (reportsNumber >= 5) {
+              bonusPoints++;
+              bonusPointsMessage = `${bonusPointsMessage}\nZdobywasz 1 dodatkowy punkt za wysłanie 5 raportów z rzędu w tym tygodniu!\n`
+            }
+            if (reportsNumber === 7) {
+              bonusPoints = bonusPoints + 2;
+              bonusPointsMessage = `${bonusPointsMessage}\nZdobywasz 2 dodatkowe punkty za wysłanie raportu każdego dnia w tym tygodniu!\n`
+            }
+
+            const weeklyStats = await user.weeklyReportStats(db, lastMonday)
+            console.log(`Tygodniowe statystyki dla ${user.fullname}`);
+            console.log(weeklyStats);
+            if (weeklyStats.theoryPoints >= 5) {
+              bonusPoints++;
+              bonusPointsMessage = `${bonusPointsMessage}\nZdobywasz 1 dodatkowy punkt za zdobycie 5 punktów Teorii w tym tygodniu!\n`
+              if (!user.findBadgeById(Badge.BADGE_ADEPTTEORIIMUZYKI).length) {
+                if (!adeptTeoriiMuzykiBadge) {
+                  adeptTeoriiMuzykiBadge = await Badge.fetchBadge(db, Badge.BADGE_ADEPTTEORIIMUZYKI);
+                }
+                user.awardBadge(db, Badge.BADGE_ADEPTTEORIIMUZYKI)
+                  .then((writeResult) => {
+                    console.log(`Przyznajemy odznakę '${Badge.BADGE_ADEPTTEORIIMUZYKI}' graczowi '${user.fullname}'.`);
+                    embededMessage = chatMessage.createNewBadgeEmbedMessage(user, adeptTeoriiMuzykiBadge);
+                    channel.send({ embed: embededMessage });
+                  });
+              }
+            }
+            if (weeklyStats.listeningPoints >= 5) {
+              bonusPoints++;
+              bonusPointsMessage = `${bonusPointsMessage}\nZdobywasz 1 dodatkowy punkt za zdobycie 5 punktów Słuchu w tym tygodniu!\n`;
+              if (!user.findBadgeById(Badge.BADGE_CZULYSLUCH).length) {
+                if (!czulySluchBadge) {
+                  czulySluchBadge = await Badge.fetchBadge(db, Badge.BADGE_CZULYSLUCH);
+                }
+                user.awardBadge(db, Badge.BADGE_CZULYSLUCH)
+                  .then((writeResult) => {
+                    console.log(`Przyznajemy odznakę '${Badge.BADGE_CZULYSLUCH}' graczowi '${user.fullname}'.`);
+                    embededMessage = chatMessage.createNewBadgeEmbedMessage(user, czulySluchBadge);
+                    channel.send({ embed: embededMessage });
+                  });
+                }
+            }
+            if (weeklyStats.technicalPoints >= 5) {
+              bonusPoints++;
+              bonusPointsMessage = `${bonusPointsMessage}\nZdobywasz 1 dodatkowy punkt za zdobycie 5 punktów Techniki w tym tygodniu!\n`
+              if (!user.findBadgeById(Badge.BADGE_ADEPTTECHNIKI).length) {
+                if (!adeptTechnikiBadge) {
+                  adeptTechnikiBadge = await Badge.fetchBadge(db, Badge.BADGE_ADEPTTECHNIKI);
+                }
+                user.awardBadge(db, Badge.BADGE_ADEPTTECHNIKI)
+                  .then((writeResult) => {
+                    console.log(`Przyznajemy odznakę '${Badge.BADGE_ADEPTTECHNIKI}' graczowi '${user.fullname}'.`);
+                    embededMessage = chatMessage.createNewBadgeEmbedMessage(user, adeptTechnikiBadge);
+                    channel.send({ embed: embededMessage });
+                  });
+              }
+            }
+
+            if (bonusPoints > 0) {
+              user.awardBonusBoints(db, admin, bonusPoints)
+                .then((writeResult) => {
+                  console.log(`Przyznajemy ${bonusPoints} dodatkowe punkty graczowi '${user.fullname}'.`);
+                  embededMessage = chatMessage.createPrizeEmbedMessage(user, bonusPointsMessage);
+                  channel.send({ embed: embededMessage });
+                });
+            }
+          });
+        })
+        .catch((error) => {
+          switch (error) {
+            default:
+              console.log(`[ERROR:checkForWeeklyAwards-User.getAllUsers] Niestety mamy jakiś problem. Daj nam znać to spróbujemy to naprawić.`, error);
+          }
+        });
 
       console.log(`Szukamy nowego kandydata do odznaki '${Badge.BADGE_LEADER}!`)
       User.findLeader(db)
@@ -124,109 +219,6 @@ module.exports = (client, db, admin, channelName) => {
             switch (error) {
               default:
                 console.log(`[ERROR:checkForWeeklyAwards-User.findStarOfTheWeek] Niestety mamy jakiś problem. Daj nam znać to spróbujemy to naprawić.`, error);
-            }
-          });
-
-        const now = new Date();
-        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() ));
-        const todayDay = today.getDay();
-        let lastMonday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() ));
-        if (todayDay == 0) {
-          lastMonday.setDate(today.getDate() - 6);
-        } else {
-          lastMonday.setDate(today.getDate() - (todayDay - 1));
-        }
-
-        console.log(`Przyznaje dodatkowe punkty za składanie raportów od ${lastMonday.toUTCString()} do ${today.toUTCString()}!`)
-        let adeptTeoriiMuzykiBadge = null;
-        let adeptTechnikiBadge = null;
-        let czulySluchBadge = null;
-
-        User.getAllUsers(db)
-          .then((users) => {
-            users.forEach(async (user) => {
-              let bonusPoints = 0;
-              let bonusPointsMessage = '';
-
-              user.fetchBadges(db);              
-              const reportsNumber = await user.checkForConsecutiveReports(db, lastMonday)
-              console.log(`Ilość raportów dla ${user.fullname}: ${reportsNumber}`);
-              if (reportsNumber >= 3) {
-                bonusPoints++;
-                bonusPointsMessage = `${bonusPointsMessage}\nZdobywasz 1 dodatkowy punkt za wysłanie 3 raportów z rzędu w tym tygodniu!\n`
-              }
-              if (reportsNumber >= 5) {
-                bonusPoints++;
-                bonusPointsMessage = `${bonusPointsMessage}\nZdobywasz 1 dodatkowy punkt za wysłanie 5 raportów z rzędu w tym tygodniu!\n`
-              }
-              if (reportsNumber === 7) {
-                bonusPoints = bonusPoints + 2;
-                bonusPointsMessage = `${bonusPointsMessage}\nZdobywasz 2 dodatkowe punkty za wysłanie raportu każdego dnia w tym tygodniu!\n`
-              }
-
-              const weeklyStats = await user.weeklyReportStats(db, lastMonday)
-              console.log(`Tygodniowe statystyki dla ${user.fullname}`);
-              console.log(weeklyStats);
-              if (weeklyStats.theoryPoints >= 5) {
-                bonusPoints++;
-                bonusPointsMessage = `${bonusPointsMessage}\nZdobywasz 1 dodatkowy punkt za zdobycie 5 punktów Teorii w tym tygodniu!\n`
-                if (!user.findBadgeById(Badge.BADGE_ADEPTTEORIIMUZYKI).length) {
-                  if (!adeptTeoriiMuzykiBadge) {
-                    adeptTeoriiMuzykiBadge = await Badge.fetchBadge(db, Badge.BADGE_ADEPTTEORIIMUZYKI);
-                  }
-                  user.awardBadge(db, Badge.BADGE_ADEPTTEORIIMUZYKI)
-                    .then((writeResult) => {
-                      console.log(`Przyznajemy odznakę '${Badge.BADGE_ADEPTTEORIIMUZYKI}' graczowi '${user.fullname}'.`);
-                      embededMessage = chatMessage.createNewBadgeEmbedMessage(user, adeptTeoriiMuzykiBadge);
-                      channel.send({ embed: embededMessage });
-                    });
-                }
-              }
-              if (weeklyStats.listeningPoints >= 5) {
-                bonusPoints++;
-                bonusPointsMessage = `${bonusPointsMessage}\nZdobywasz 1 dodatkowy punkt za zdobycie 5 punktów Słuchu w tym tygodniu!\n`;
-                if (!user.findBadgeById(Badge.BADGE_CZULYSLUCH).length) {
-                  if (!czulySluchBadge) {
-                    czulySluchBadge = await Badge.fetchBadge(db, Badge.BADGE_CZULYSLUCH);
-                  }
-                  user.awardBadge(db, Badge.BADGE_CZULYSLUCH)
-                    .then((writeResult) => {
-                      console.log(`Przyznajemy odznakę '${Badge.BADGE_CZULYSLUCH}' graczowi '${user.fullname}'.`);
-                      embededMessage = chatMessage.createNewBadgeEmbedMessage(user, czulySluchBadge);
-                      channel.send({ embed: embededMessage });
-                    });
-                  }
-              }
-              if (weeklyStats.technicalPoints >= 5) {
-                bonusPoints++;
-                bonusPointsMessage = `${bonusPointsMessage}\nZdobywasz 1 dodatkowy punkt za zdobycie 5 punktów Techniki w tym tygodniu!\n`
-                if (!user.findBadgeById(Badge.BADGE_ADEPTTECHNIKI).length) {
-                  if (!adeptTechnikiBadge) {
-                    adeptTechnikiBadge = await Badge.fetchBadge(db, Badge.BADGE_ADEPTTECHNIKI);
-                  }
-                  user.awardBadge(db, Badge.BADGE_ADEPTTECHNIKI)
-                    .then((writeResult) => {
-                      console.log(`Przyznajemy odznakę '${Badge.BADGE_ADEPTTECHNIKI}' graczowi '${user.fullname}'.`);
-                      embededMessage = chatMessage.createNewBadgeEmbedMessage(user, adeptTechnikiBadge);
-                      channel.send({ embed: embededMessage });
-                    });
-                }
-              }
-
-              if (bonusPoints > 0) {
-                user.awardBonusBoints(db, admin, bonusPoints)
-                  .then((writeResult) => {
-                    console.log(`Przyznajemy ${bonusPoints} dodatkowe punkty graczowi '${user.fullname}'.`);
-                    embededMessage = chatMessage.createPrizeEmbedMessage(user, bonusPointsMessage);
-                    channel.send({ embed: embededMessage });
-                  });
-              }
-            });
-          })
-          .catch((error) => {
-            switch (error) {
-              default:
-                console.log(`[ERROR:checkForWeeklyAwards-User.getAllUsers] Niestety mamy jakiś problem. Daj nam znać to spróbujemy to naprawić.`, error);
             }
           });
 

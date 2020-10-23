@@ -22,6 +22,7 @@ class Badge {
   static BADGE_ADEPTTEORIIMUZYKI = "Adept Teorii Muzyki";
   static BADGE_CZULYSLUCH = "Czuły Słuch";
   static BADGE_STRIKER = "Striker";
+  static BADGE_RUSKIGENERAL = "Ruski Generał";
 
   constructor() {
   }
