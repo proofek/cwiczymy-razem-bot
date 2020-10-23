@@ -464,6 +464,10 @@ class User {
       revoked: false,
       dateRevoked: null,
     });
+
+    return new Promise(resolve => {
+      resolve(badgeId)
+    });
   }
 
   async checkForConsecutiveReports(db, dateFrom) {
