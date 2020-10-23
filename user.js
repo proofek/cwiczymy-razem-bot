@@ -309,6 +309,9 @@ class User {
       newBadges.push(Badge.BADGE_DIAMONDGUITAR);
     }
 
+    // Striker
+    const strikerBadge = await this.checkStrikerAward(db, newReport);
+
     // Mądrala
     const theoryBadge = await this.checkTheoryMasterAward(db, newReport);
 
@@ -316,7 +319,7 @@ class User {
     const technicalBadge = await this.checkTechnicalMasterAward(db, newReport);
 
     return new Promise(resolve => {
-      resolve(newBadges.concat(theoryBadge).concat(technicalBadge))
+      resolve(newBadges.concat(theoryBadge).concat(technicalBadge).concat(strikerBadge))
     });
   }
 
@@ -371,6 +374,21 @@ class User {
 
     if (technicalMasterQuery.empty && ((+this.technika + newReport.technika) >= points) && !this.findBadgeById(Badge.BADGE_SILACZ).length) {
       newBadges.push(Badge.BADGE_SILACZ);
+    }
+
+    return new Promise(resolve => {
+      resolve(newBadges)
+    });
+  }
+
+  async checkStrikerAward(db, newReport, points = 15) {
+    const newBadges = [];
+    const newPoints = newReport.teoria + newReport.technika + newReport.sluch + newReport.dodatkowePunkty;
+    const lastMonday = cf.getLastMonday();
+    const weeklyStats = await this.weeklyReportStats(db, lastMonday);
+
+    if (!this.findBadgeById(Badge.BADGE_STRIKER).length && (weeklyStats.pointsThisWeek + newPoints) >= points) {
+      newBadges.push(Badge.BADGE_STRIKER);
     }
 
     return new Promise(resolve => {
@@ -493,6 +511,7 @@ class User {
     let theoryPoints = 0;
     let listeningPoints = 0;
     let technicalPoints = 0;
+    let additionalPoints = 0;
     const reportsSnapshot = await db.collection('results').doc(this.id).collection("raporty")
       .where('date', '>=', Date.parse(dateFrom))
       .orderBy("date", "asc")
@@ -508,11 +527,14 @@ class User {
       theoryPoints = theoryPoints + ((report.teoria) ? report.teoria : 0);
       listeningPoints = listeningPoints + ((report.sluch) ? report.sluch : 0);
       technicalPoints = technicalPoints + ((report.technika) ? report.technika : 0);
+      additionalPoints = additionalPoints + ((report.dodatkowePunkty) ? report.dodatkowePunkty : 0);
     });
 
     weeklyStats.theoryPoints = theoryPoints;
     weeklyStats.listeningPoints = listeningPoints;
     weeklyStats.technicalPoints = technicalPoints;
+    weeklyStats.additionalPoints = additionalPoints;
+    weeklyStats.pointsThisWeek = theoryPoints + listeningPoints + technicalPoints + additionalPoints;
 
     return new Promise(resolve => {
       resolve(weeklyStats)
