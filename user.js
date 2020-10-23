@@ -318,8 +318,15 @@ class User {
     // Siłacz
     const technicalBadge = await this.checkTechnicalMasterAward(db, newReport);
 
+    newBadges = newBadges.concat(theoryBadge).concat(technicalBadge).concat(strikerBadge)
+    
+    // Ruski Generał
+    if ((this.badges.length + newBadges.length) >= 8 && !this.findBadgeById(Badge.BADGE_RUSKIGENERAL).length) {
+      newBadges.push(Badge.BADGE_RUSKIGENERAL); 
+    }
+
     return new Promise(resolve => {
-      resolve(newBadges.concat(theoryBadge).concat(technicalBadge).concat(strikerBadge))
+      resolve(newBadges)
     });
   }
 
@@ -456,6 +463,10 @@ class User {
       dateAdded: Date.now(),
       revoked: false,
       dateRevoked: null,
+    });
+
+    return new Promise(resolve => {
+      resolve(badgeId)
     });
   }
 
