@@ -26,17 +26,19 @@ fs.readdir("./events/", (err, files) => {
 client.login(process.env.BOT_TOKEN).then(() => {
 
   const interval = 3600000; // 10000 -, 600000 - 10min, 3600000 - 1h;
-  const checkOnDay = 5; // 0 - Sunday, 5 - Friday
+  const checkOnDay = 0; // 0 - Sunday, 5 - Friday
+  const checkOnHour = 17;
   const channelName = 'cwiczymy-razem'; // test, cwiczymy-razem
   let checkedAlready = false;
 
-  console.log(`Ustawiam sprawdzanie przyznawania odznak. Dzień=${checkOnDay}, co ${interval / 60000} min`);
+  console.log(`Ustawiam sprawdzanie przyznawania odznak. Dzień=${dayOfWeekAsInteger(checkOnDay)}, Godzina=${checkOnHour}, co ${(interval < 60000) ? interval/1000 + ' sek' : interval/60000 + ' min' }`);
   const intervalObj = client.setInterval(() => {
     const currentDateTime = new Date();
     console.log(`[${currentDateTime.toString()}] Running interval with checkedAlready=${checkedAlready}`);
 
     const dayOfWeek = currentDateTime.getDay();
-    if (!checkedAlready && dayOfWeek == checkOnDay) {
+    const hourOfDay = currentDateTime.getHours();
+    if (!checkedAlready && dayOfWeek == checkOnDay && hourOfDay == checkOnHour) {
       client.emit('checkForWeeklyAwards', channelName);
       checkedAlready = true;
     } else if (dayOfWeek != checkOnDay) {
@@ -46,3 +48,13 @@ client.login(process.env.BOT_TOKEN).then(() => {
   }, interval, checkedAlready);  
 })
 
+/**
+* Converts a day string to an number.
+*
+* @method dayOfWeekAsInteger
+* @param {String} day
+* @return {Number} Returns day as number
+*/
+function dayOfWeekAsInteger(day) {
+  return ["Niedziela","Poniedziałek","Wtorek","Środa","Czwartek","Piątek","Sobota"][day];
+}
