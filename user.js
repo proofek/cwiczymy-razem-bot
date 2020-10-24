@@ -36,9 +36,9 @@ class User {
 
   get timeThisSeason() {
     const hours = Math.floor(+this.timeTotal)
-    const min = (+this.timeTotal % 1).toFixed(10);
+    const min = ((+this.timeTotal % 1).toFixed(10)*60);
 
-    return hours + ":" + Math.round(min*60);
+    return hours + ":" + cf.numberPad(Math.round(min), 2);
   }
 
   addBadge(badge) {

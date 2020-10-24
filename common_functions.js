@@ -25,5 +25,12 @@ function getLastMonday() {
   return lastMonday;
 }
 
+function numberPad(num, size) {
+    num = num.toString();
+    while (num.length < size) num = "0" + num;
+    return num;
+}
+
 module.exports.getStatValueFromArgs = getStatValueFromArgs;
 module.exports.getLastMonday = getLastMonday;
+module.exports.numberPad = numberPad;
