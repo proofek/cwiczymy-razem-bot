@@ -33,7 +33,7 @@ module.exports = (db, admin, message, args) => {
       });
 
       let cwiczymyrazemChannel = null;
-      if (message.guild.channels) {
+      if (message.guild) {
         cwiczymyrazemChannel = message.guild.channels.cache.find(channel => channel.name === "cwiczymy-razem");
       }
       
