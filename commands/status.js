@@ -32,7 +32,11 @@ module.exports = (db, admin, message, args) => {
         nextSeason = Season.fromFirebaseDoc(nextSeasonFound);
       });
 
-      const cwiczymyrazemChannel = message.guild.channels.cache.find(channel => channel.name === "cwiczymy-razem");
+      let cwiczymyrazemChannel = null;
+      if (message.guild.channels) {
+        cwiczymyrazemChannel = message.guild.channels.cache.find(channel => channel.name === "cwiczymy-razem");
+      }
+      
       let noSeasonMessage = `Cierpliwości  :boar:  . Na razie nie ćwiczymy. Szukaj informacji na temat kolejnego sezonu na kanale ${(cwiczymyrazemChannel) ? cwiczymyrazemChannel.toString() : '#cwiczymy-razem'}.`;
 
       Season.findCurrentSeason(db)
