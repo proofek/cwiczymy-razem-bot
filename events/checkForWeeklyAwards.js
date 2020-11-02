@@ -75,7 +75,6 @@ async function awardAdditionalPoints(db, admin, user, lastMonday, discordMessage
 
   await user.fetchBadges(db);
   const reportsNumber = await user.checkForConsecutiveReports(db, lastMonday)
-  console.log(`Ilość raportów dla ${user.fullname}: ${reportsNumber}`);
   if (reportsNumber >= 3) {
     bonusPoints++;
     bonusPointsMessage = `${bonusPointsMessage}\nZdobywasz 1 dodatkowy punkt za wysłanie 3 raportów z rzędu w tym tygodniu!\n`
@@ -90,7 +89,6 @@ async function awardAdditionalPoints(db, admin, user, lastMonday, discordMessage
   }
 
   const weeklyStats = await user.weeklyReportStats(db, lastMonday);
-  console.log(weeklyStats);
   if (weeklyStats.theoryPoints >= 5) {
     bonusPoints++;
     bonusPointsMessage = `${bonusPointsMessage}\nZdobywasz 1 dodatkowy punkt za zdobycie 5 punktów Teorii w tym tygodniu!\n`
@@ -152,50 +150,43 @@ async function awardLeaderBadge(db, client, discordMessage, channel) {
   const Badge = require("../badge.js")
   const chatMessage = new discordMessage();
 
-  User.findLeader(db)
-    .then((leader) => {
-      console.log(`Znaleziono nowego lidera: ${leader.fullname} - punkty: ${leader.pointsThisSeason}`);
+  User.findLeaders(db)
+    .then((leaders) => {
       Badge.fetchBadge(db, Badge.BADGE_LEADER)
         .then((leaderBadge) => {
-          User.findUserWithLeaderAward(db)
-            .then((currentOwner) => {
-              if (currentOwner) {
-                console.log(`Znaleziono aktualnego posiadacza odznaki lidera: ${currentOwner.fullname} - punkty: ${currentOwner.pointsThisSeason}`);  
-                if (currentOwner.id == leader.id) {
-                  console.log(`Nie mamy zmiany na pozycji lidera.`);
+
+          leaders.forEach((leader) => {
+            leader.fetchBadges(db)
+              .then(() => {
+                if (leader.findBadgeById(Badge.BADGE_LEADER).length) {
+                  console.log(`Nie mamy zmiany na pozycji lidera. ${leader.fullname} pozostaje na pozycji lidera w tym tygodniu!`);
                   channel.send(`Gratulacje ${User.getDiscordUser(client, leader)}! Pozostajesz na pozycji lidera w tym tygodniu! :clap: :champagne:`);
                   embededMessage = chatMessage.createNewBadgeEmbedMessage(leader, leaderBadge);
                   channel.send({ embed: embededMessage });
                 } else {
-                  if (currentOwner.pointsThisSeason <= leader.pointsThisSeason) {
-                    currentOwner.revokeBadge(db, Badge.BADGE_LEADER)
-                      .then((writeResult) => {
-                        console.log(`'${currentOwner.fullname}' traci pozycję lidera.`);
-                        channel.send(`Niestety ${User.getDiscordUser(client, currentOwner)}! Tracisz pozycję lidera w tym tygodniu! :frowning2:`);
-                      });
-                  }
+                  leader.awardBadge(db, Badge.BADGE_LEADER)
+                    .then((writeResult) => {
+                      console.log(`Przyznajemy odznakę '${Badge.BADGE_LEADER}' graczowi '${leader.fullname}'.`);
+                      channel.send(`Gratulacje ${User.getDiscordUser(client, leader)}! Zostajesz nowym liderem w tym tygodniu! :clap: :champagne:`);
+                      embededMessage = chatMessage.createNewBadgeEmbedMessage(leader, leaderBadge);
+                      channel.send({ embed: embededMessage });
+                    });
+                }
+              })
+          });
 
-                  if (currentOwner.id != leader.id) {
-                    leader.awardBadge(db, Badge.BADGE_LEADER)
-                      .then((writeResult) => {
-                        console.log(`Przyznajemy odznakę '${Badge.BADGE_LEADER}' graczowi '${leader.fullname}'.`);
-                        channel.send(`Gratulacje ${User.getDiscordUser(client, leader)}! Zostajesz nowym liderem w tym tygodniu! :clap: :champagne:`);
-                        embededMessage = chatMessage.createNewBadgeEmbedMessage(leader, leaderBadge);
-                        channel.send({ embed: embededMessage });
-                      });
-                  }
-                }            
-              } else {
-                console.log(`Nikt nie posiada jeszcze odznaki Lidera`);
-                leader.awardBadge(db, Badge.BADGE_LEADER)
-                  .then((writeResult) => {
-                    console.log(`Przyznajemy odznakę '${Badge.BADGE_LEADER}' graczowi '${leader.fullname}'.`);
-                    channel.send(`Gratulacje ${User.getDiscordUser(client, leader)}! Zostajesz nowym liderem w tym tygodniu! :clap: :champagne:`);
-                    embededMessage = chatMessage.createNewBadgeEmbedMessage(leader, leaderBadge);
-                    channel.send({ embed: embededMessage });
-                  });
-              }
-            })
+          User.findUsersWithLeaderAward(db)
+            .then((currentOwners) => {
+              currentOwners.forEach((currentOwner) => {
+                if (isCurrentLeader(leaders, currentOwner.id).length === 0) {
+                  currentOwner.revokeBadge(db, Badge.BADGE_LEADER)
+                    .then((writeResult) => {
+                      console.log(`'${currentOwner.fullname}' traci pozycję lidera.`);
+                      channel.send(`Niestety ${User.getDiscordUser(client, currentOwner)}! Tracisz pozycję lidera w tym tygodniu! :frowning2:`);
+                    });
+                }
+              });
+            });
         });
     })
     .catch((error) => {
@@ -211,51 +202,43 @@ async function awardStarOfTheWeekBadge(db, client, discordMessage, channel) {
   const Badge = require("../badge.js")
   const chatMessage = new discordMessage();
 
-  User.findStarOfTheWeek(db)
-    .then((starOfTheWeek) => {
-      console.log(`Znaleziono nową gwiazdę tygodnia: ${starOfTheWeek.fullname} - punkty: ${starOfTheWeek.dodatkowePunkty}`);
+  User.findStarsOfTheWeek(db)
+    .then((starsOfTheWeek) => {
       Badge.fetchBadge(db, Badge.BADGE_STAROFTHEWEEK)
         .then((starBadge) => {
-          User.findUserWithStarAward(db)
-            .then((currentOwner) => {
-              if (currentOwner) {
-                console.log(`Znaleziono aktualnego posiadacza odznaki '${Badge.BADGE_STAROFTHEWEEK}': ${currentOwner.fullname} - punkty: ${currentOwner.dodatkowePunkty}`);  
-                if (currentOwner.id == starOfTheWeek.id) {
-                  console.log(`Nie mamy zmiany Gwiazdy Tygodnia.`);
+
+          starsOfTheWeek.forEach((starOfTheWeek) => {
+            starOfTheWeek.fetchBadges(db)
+              .then(() => {
+                if (starOfTheWeek.findBadgeById(Badge.BADGE_STAROFTHEWEEK).length) {
+                  console.log(`Nie mamy zmiany Gwiazdy Tygodnia. ${starOfTheWeek.fullname} pozostaje Gwiazdą Tygodnia!!`);
                   channel.send(`Gratulacje ${User.getDiscordUser(client, starOfTheWeek)}! Pozostajesz Gwiazdą Tygodnia! :clap: :champagne:`);
                   embededMessage = chatMessage.createNewBadgeEmbedMessage(starOfTheWeek, starBadge);
                   channel.send({ embed: embededMessage });
                 } else {
-                  if (currentOwner.dodatkowePunkty <= starOfTheWeek.dodatkowePunkty) {
-                    currentOwner.revokeBadge(db, Badge.BADGE_STAROFTHEWEEK)
-                      .then((writeResult) => {
-                        console.log(`'${currentOwner.fullname}' przestaje być Gwiazdą Tygodnia.`);
-                        channel.send(`Niestety ${User.getDiscordUser(client, currentOwner)}! Przestajesz być Gwiazdą Tygodnia! :frowning2:`);
-                      });
-                  }
+                  starOfTheWeek.awardBadge(db, Badge.BADGE_STAROFTHEWEEK)
+                    .then((writeResult) => {
+                      console.log(`Przyznajemy odznakę '${Badge.BADGE_STAROFTHEWEEK}' graczowi '${starOfTheWeek.fullname}'.`);
+                      channel.send(`Gratulacje ${User.getDiscordUser(client, starOfTheWeek)}! Zostajesz nową Gwiazdą Tygodnia! :clap: :champagne:`);
+                      embededMessage = chatMessage.createNewBadgeEmbedMessage(starOfTheWeek, starBadge);
+                      channel.send({ embed: embededMessage });
+                    });
+                }
+              });
+          });
 
-                  if (currentOwner.id != starOfTheWeek.id) {
-                    starOfTheWeek.awardBadge(db, Badge.BADGE_STAROFTHEWEEK)
-                      .then((writeResult) => {
-                        console.log(`Przyznajemy odznakę '${Badge.BADGE_STAROFTHEWEEK}' graczowi '${starOfTheWeek.fullname}'.`);
-                        channel.send(`Gratulacje ${User.getDiscordUser(client, starOfTheWeek)}! Zostajesz nową Gwiazdą Tygodnia! :clap: :champagne:`);
-                        embededMessage = chatMessage.createNewBadgeEmbedMessage(starOfTheWeek, starBadge);
-                        channel.send({ embed: embededMessage });
-                      });
-                  }
-                }  
-              } else {
-                console.log(`Nikt nie posiada jeszcze odznaki '${Badge.BADGE_STAROFTHEWEEK}'`);
-                starOfTheWeek.awardBadge(db, Badge.BADGE_STAROFTHEWEEK)
-                  .then((writeResult) => {
-                    console.log(`Przyznajemy odznakę '${Badge.BADGE_STAROFTHEWEEK}' graczowi '${starOfTheWeek.fullname}'.`);
-                    channel.send(`Gratulacje ${User.getDiscordUser(client, starOfTheWeek)}! Zostajesz nową Gwiazdą Tygodnia! :clap: :champagne:`);
-                    embededMessage = chatMessage.createNewBadgeEmbedMessage(starOfTheWeek, starBadge);
-                    channel.send({ embed: embededMessage });
-                  });
-              }
+          User.findUsersWithStarAward(db)
+            .then((currentOwners) => {
+              currentOwners.forEach((currentOwner) => {
+                if (isCurrentLeader(starsOfTheWeek, currentOwner.id).length === 0) {
+                  currentOwner.revokeBadge(db, Badge.BADGE_STAROFTHEWEEK)
+                    .then((writeResult) => {
+                      console.log(`'${currentOwner.fullname}' przestaje być Gwiazdą Tygodnia.`);
+                      channel.send(`Niestety ${User.getDiscordUser(client, currentOwner)}! Przestajesz być Gwiazdą Tygodnia! :frowning2:`);
+                    });
+                }
+              });
             });
-
         });
     })
     .catch((error) => {
@@ -264,4 +247,10 @@ async function awardStarOfTheWeekBadge(db, client, discordMessage, channel) {
           console.log(`[ERROR:checkForWeeklyAwards-User.findStarOfTheWeek] Niestety mamy jakiś problem. Daj nam znać to spróbujemy to naprawić.`, error);
       }
     });
+}
+
+function isCurrentLeader(leaders, leaderId) {
+  return leaders.filter((leader) => {
+      return leader.id == leaderId
+  });
 }

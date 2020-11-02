@@ -403,51 +403,47 @@ class User {
     });
   }
 
-  static async findUserWithLeaderAward(db) {
+  static async findUsersWithLeaderAward(db) {
     const badgeName = 'Lider';
-    let ownerRef = null;
-    let owner = null;
+    let ownersRef = [];
+    let owners = [];
+    let ownerPromises = [];
 
-    const leaderBadgeQuery = await db.collectionGroup('badges')
+    const leadersBadgeQuery = await db.collectionGroup('badges')
       .where("name", '==', badgeName)
       .where("revoked", '==', false)
       .get();
 
-    leaderBadgeQuery.forEach((badgeFound) => {
-      ownerRef = badgeFound.ref.parent.parent;
+    leadersBadgeQuery.forEach((badgeFound) => {
+      const ownerPromise = badgeFound.ref.parent.parent.get()
+        .then((user) => {
+          return User.fromFirebaseDoc(user);
+        })
+      ownerPromises.push(ownerPromise);
     });
 
-    if (ownerRef) {
-      const ownerFound = await ownerRef.get();
-      owner = User.fromFirebaseDoc(ownerFound);
-    }
-
-    return new Promise(resolve => {
-      resolve(owner)
-    });
+    return Promise.all(ownerPromises);
   }
 
-  static async findUserWithStarAward(db) {
-    let ownerRef = null;
-    let owner = null;
+  static async findUsersWithStarAward(db) {
+    let ownersRef = [];
+    let owners = null;
+    let ownerPromises = [];
 
-    const starBadgeQuery = await db.collectionGroup('badges')
+    const starsBadgeQuery = await db.collectionGroup('badges')
       .where("name", '==', Badge.BADGE_STAROFTHEWEEK)
       .where("revoked", '==', false)
       .get();
 
-    starBadgeQuery.forEach((badgeFound) => {
-      ownerRef = badgeFound.ref.parent.parent;
+    starsBadgeQuery.forEach((badgeFound) => {
+      const ownerPromise = badgeFound.ref.parent.parent.get()
+        .then((user) => {
+          return User.fromFirebaseDoc(user);
+        })
+      ownerPromises.push(ownerPromise);
     });
 
-    if (ownerRef) {
-      const ownerFound = await ownerRef.get();
-      owner = User.fromFirebaseDoc(ownerFound);
-    }
-
-    return new Promise(resolve => {
-      resolve(owner)
-    });
+    return Promise.all(ownerPromises);
   }
 
   async revokeBadge(db, badgeId) {
@@ -558,41 +554,53 @@ class User {
     });
   }
 
-  static async findLeader(db) {
-    let leader = null;
+  static async findLeaders(db) {
+    let leaders = [];
 
     // Znajdź aktualnego lidera
     const leaderQuery = await db.collection('results')
       .where('removed', '==', false)
       .orderBy("pointsThisSeason", "desc")
-      .limit(1)
       .get();
 
+    let maxPointsThisSeason = null;
     leaderQuery.forEach((leaderFound) => {
-      leader = User.fromFirebaseDoc(leaderFound);
+      const leader = User.fromFirebaseDoc(leaderFound);
+      if (!maxPointsThisSeason) {
+        maxPointsThisSeason = leader.pointsThisSeason;
+      }
+      if (leader.pointsThisSeason == maxPointsThisSeason) {
+        leaders.push(leader);
+      }
     });
 
     return new Promise(resolve => {
-      resolve(leader)
+      resolve(leaders)
     });
   }
 
-  static async findStarOfTheWeek(db) {
-    let starOfTheWeek = null;
+  static async findStarsOfTheWeek(db) {
+    let starsOfTheWeek = [];
 
     // Znajdź aktualnego lidera
     const starOfTheWeekQuery = await db.collection('results')
       .where('removed', '==', false)
       .orderBy("additionalPoints", "desc")
-      .limit(1)
       .get();
 
+    let maxAdditionalPoints = null;
     starOfTheWeekQuery.forEach((starFound) => {
-      starOfTheWeek = User.fromFirebaseDoc(starFound);
+      const starOfTheWeek = User.fromFirebaseDoc(starFound);
+      if (!maxAdditionalPoints) {
+        maxAdditionalPoints = starOfTheWeek.dodatkowePunkty;
+      }
+      if (starOfTheWeek.dodatkowePunkty == maxAdditionalPoints) {
+        starsOfTheWeek.push(starOfTheWeek);
+      }
     });
 
     return new Promise(resolve => {
-      resolve(starOfTheWeek)
+      resolve(starsOfTheWeek)
     });
   }
 

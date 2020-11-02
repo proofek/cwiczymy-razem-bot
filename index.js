@@ -25,7 +25,7 @@ fs.readdir("./events/", (err, files) => {
 
 client.login(process.env.BOT_TOKEN).then(() => {
 
-  const interval = 3600000; // 10000 -, 600000 - 10min, 3600000 - 1h;
+  const interval = 3600000; // 10000 - 10sek, 600000 - 10min, 3600000 - 1h;
   const checkOnDay = 0; // 0 - Sunday, 5 - Friday
   const checkOnHour = 17;
   const channelName = 'cwiczymy-razem'; // test, cwiczymy-razem
