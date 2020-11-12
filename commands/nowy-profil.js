@@ -17,6 +17,7 @@ module.exports = (db, message, args) => {
               User.addUser(db, newUser).then(function() {
                 return message.reply(`:guitar::guitar::guitar: w dłoń! Zostałeś dodany do zabawy! Zaczynamy ćwiczenia!`)
               });
+              break;
             default:
               console.log(`[ERROR:nowy-profil-User.findUser] Niestety mamy jakiś problem. Daj nam znać to spróbujemy to naprawić.`, error);
           }
