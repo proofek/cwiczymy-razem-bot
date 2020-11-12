@@ -346,7 +346,11 @@ class User {
 
   static async findTop10(db, sortby = 'seasonsum') {
     let users = [];
-    const usersQuery = await db.collection('results').orderBy(sortby, 'desc').limit(10).get();
+    const usersQuery = await db.collection('results')
+      .where('removed', '==', false)
+      .orderBy(sortby, 'desc')
+      .limit(10)
+      .get();
 
     if (usersQuery.empty) {
       throw 'NoUserException';
