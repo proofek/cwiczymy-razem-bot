@@ -28,7 +28,7 @@ client.login(process.env.BOT_TOKEN).then(() => {
   const interval = 3600000; // 10000 - 10sek, 600000 - 10min, 3600000 - 1h;
   const checkOnDay = 0; // 0 - Sunday, 5 - Friday
   const checkOnHour = 17;
-  const channelName = 'cwiczymy-razem'; // test, cwiczymy-razem
+  const channelName = 'cwiczymy-razem-raporty'; // test, cwiczymy-razem-raporty
   let checkedAlready = false;
 
   console.log(`Ustawiam sprawdzanie przyznawania odznak. Dzień=${dayOfWeekAsInteger(checkOnDay)}, Godzina=${checkOnHour}, co ${(interval < 60000) ? interval/1000 + ' sek' : interval/60000 + ' min' }`);
