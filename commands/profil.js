@@ -4,9 +4,12 @@ module.exports = (db, admin, message, args) => {
   const Badge = require("../badge.js")
   const discordMessage = require("../discordMessage")
   const chatMessage = new discordMessage();
-
+  const taggedUser = message.mentions.users.first();
+  
   let targetUser = message.author.tag;
-  if(args.length > 0){
+  if (taggedUser) {
+    targetUser = `${taggedUser.username}#${taggedUser.discriminator}`
+  } else if(args.length > 0){
     targetUser = args[0];
   }
 
