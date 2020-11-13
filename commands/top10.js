@@ -32,5 +32,7 @@ module.exports = (db, message, args) => {
       if (error == 'NoUserException') {
         return message.reply(`Hmm... mamy mały problem. Nie znaleziono żadnych uczestników zabawy.`);
       }
+      
+      console.log(`[ERROR:top10-User.findTop10] Niestety mamy jakiś problem. Daj nam znać to spróbujemy to naprawić.`, error);
     });
 }
