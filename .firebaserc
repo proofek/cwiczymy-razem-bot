@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "production": "bazok-98f32",
+    "default": "bazok-dev"
+  }
+}

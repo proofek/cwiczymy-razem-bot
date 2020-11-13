@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /results/{result} {
+      allow read: if true;
+      allow write: if request.auth.uid != null;
+    }
+    match /results/{result}/badges/{badge} {
+      allow read: if true;
+      allow write: if request.auth.uid != null;
+    }
+    match /achievements/{achievement} {
+      allow read: if true;
+      allow write: if request.auth.uid != null;
+    }
+    match /seasons/{season} {
+      allow read: if true;
+      allow write: if request.auth.uid != null;
+    }
+    match /seasons/{season}/winners/{winner} {
+      allow read: if true;
+      allow write: if request.auth.uid != null;
+    }
+  }
+}
