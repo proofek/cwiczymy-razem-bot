@@ -22,93 +22,99 @@ module.exports = (db, admin, message, args) => {
   let theoryPoints = 0;
   let additionalPoints = 0;
 
-  for (let line of args) {
+  Season.findCurrentSeason(db)
+    .then((season) => {
 
-      if (!reportDate) {
+      for (let line of args) {
 
-        try {
+          if (!reportDate) {
 
-          reportDate = parseReportDate(line)  
+            try {
 
-        } catch (e) {
+              reportDate = parseReportDate(line, season)  
 
-          if (e == 'InvalidDateException') {
-            return message.reply(`Podałeś nieprawidłową datę. Pamiętaj, że data raportu powinna być w formacie YYYY-MM-DD, np. 2020-09-28.`);
+            } catch (e) {
+
+              if (e == 'InvalidDateException') {
+                return message.reply(`Podałeś nieprawidłową datę. Pamiętaj, że data raportu powinna być w formacie YYYY-MM-DD, np. 2020-09-28.`);
+              }
+
+              if (e == 'ReportTooOldException') {
+                return message.reply(`Któżby pamiętał o tak starym ćwiczeniu? Raportuj na bieżąco. Pamiętaj, że nie możesz wysyłać raportów starszych niż 7 dni.`);
+              }
+
+              if (e == 'ReportInTheFutureException') {
+                return message.reply(`To się zapędziłeś  :boar:  ! Ćwiczenie w przyszłości? Możesz nam tylko powiedzieć o ćwiczeniu, które się już odbyło. Pamiętaj, akceptujemy raporty z dnia dzisiejszego lub 7-miu ostatnich dni.`);
+              }
+
+              if (e == 'ReportBeforeSeasonStartException') {
+                return message.reply(`Hey :boar:  ! Wspaniale, że ćwiczysz regularnie. :thumbsup: Ale w naszej zabawie akceptujemy tylko raporty z ćwiczeń w trakcie aktualnego sezonu, czyli od ${dateformat(season.startDate, 'isoDate')}`); 
+              }
+            }
           }
 
-          if (e == 'ReportTooOldException') {
-            return message.reply(`Któżby pamiętał o tak starym ćwiczeniu? Raportuj na bieżąco. Pamiętaj, że nie możesz wysyłać raportów starszych niż 7 dni.`);
+          if (!reportTime) {
+            try {
+
+              reportTime = parseReportTime(line)  
+
+            } catch (e) {
+
+              if (e == 'InvalidTimeException') {
+                return message.reply(`Podałeś nieprawidłowy czas. Pamiętaj, że czas ćwiczeń powinien być w formacie HH:MM, np. 01:30 dla 1 godziny i 30 minut`);
+              }
+            }
           }
 
-          if (e == 'ReportInTheFutureException') {
-            return message.reply(`To się zapędziłeś  :boar:  ! Ćwiczenie w przyszłości? Możesz nam tylko powiedzieć o ćwiczeniu, które się już odbyło. Pamiętaj, akceptujemy raporty z dnia dzisiejszego lub 7-miu ostatnich dni.`);
+          if (technicalPoints == 0) {
+            technicalPoints = parseTechnicalPoints(line);
           }
-        }
-      }
+
+          if (listeningPoints == 0) {
+            listeningPoints = parseListeningPoints(line);
+          }
+
+          if (theoryPoints == 0) {
+            theoryPoints = parseTheoryPoints(line);
+          }
+
+          if (additionalPoints == 0) {
+            const urlsFound = getUrls(line);
+            if (urlsFound.size > 0) {
+              const urlsIterator = urlsFound[Symbol.iterator]();
+              newReport.dokument = urlsIterator.next().value;
+              additionalPoints = 1;
+            }
+          }
+      };
 
       if (!reportTime) {
-        try {
-
-          reportTime = parseReportTime(line)  
-
-        } catch (e) {
-
-          if (e == 'InvalidTimeException') {
-            return message.reply(`Podałeś nieprawidłowy czas. Pamiętaj, że czas ćwiczeń powinien być w formacie HH:MM, np. 01:30 dla 1 godziny i 30 minut`);
-          }
-        }
+        return message.reply(`Hey  :boar:  ! Ale musisz nam powiedzieć jak długo ćwiczyłeś. Dodaj do raportu na przykład taką linię: 'Czas 1:30h'`);
       }
 
-      if (technicalPoints == 0) {
-        technicalPoints = parseTechnicalPoints(line);
-      }
-
-      if (listeningPoints == 0) {
-        listeningPoints = parseListeningPoints(line);
-      }
-
-      if (theoryPoints == 0) {
-        theoryPoints = parseTheoryPoints(line);
-      }
+      reportDate = dateformat((!reportDate) ? new Date() : reportDate, 'isoDate');
 
       if (additionalPoints == 0) {
-        const urlsFound = getUrls(line);
-        if (urlsFound.size > 0) {
-          const urlsIterator = urlsFound[Symbol.iterator]();
-          newReport.dokument = urlsIterator.next().value;
+        if (message.attachments.size > 0) {
+          const attachment = message.attachments.values().next().value;
+          newReport.dokument = attachment.url;
           additionalPoints = 1;
         }
       }
-  };
 
-  if (!reportTime) {
-    return message.reply(`Hey  :boar:  ! Ale musisz nam powiedzieć jak długo ćwiczyłeś. Dodaj do raportu na przykład taką linię: 'Czas 1:30h'`);
-  }
+      newReport.czas = reportTime;
+      newReport.technika = technicalPoints;
+      newReport.sluch = listeningPoints;
+      newReport.teoria = theoryPoints;
+      newReport.dodatkowePunkty = additionalPoints;
 
-  reportDate = dateformat((!reportDate) ? new Date() : reportDate, 'isoDate');
-
-  if (additionalPoints == 0) {
-    if (message.attachments.size > 0) {
-      const attachment = message.attachments.values().next().value;
-      newReport.dokument = attachment.url;
-      additionalPoints = 1;
-    }
-  }
-
-  newReport.czas = reportTime;
-  newReport.technika = technicalPoints;
-  newReport.sluch = listeningPoints;
-  newReport.teoria = theoryPoints;
-  newReport.dodatkowePunkty = additionalPoints;
-
-  Season.findCurrentSeason(db)
-    .then((season) => {
-      console.log(`Zapisuję raport dla ${season.id}`)
+      console.log(`Zapisuję raport dla ${season.id} od ${username} na dzień ${reportDate}`)
       saveReport(db, username, season.id, reportDate, newReport)
         .then((result) => {
-          console.log('Wykonano poprawnie. ' + result.id);
+          console.log(`Raport ${result.id} dla ${username} z dnia ${reportDate} zapisano poprawnie.`);
         })
         .catch((error) => {
+          console.log(`Wystąpił błąd przy zapisywaniu raportu dla ${username} z dnia ${reportDate} - ${error}`);
           switch (error) {
             case 'NoUserException':
               return message.reply(`Hmm... mamy mały problem. Aby zacząc ćwiczyć razem z nami zarejestruj się najpierw używając komendy _!nowy-profil_.`)
@@ -189,7 +195,7 @@ Przyznane punkty: technika ${newReport.technika}, słuch ${newReport.sluch}, teo
   }
 }
 
-function parseReportDate(line) {
+function parseReportDate(line, season) {
 
   let reportDate = '';
   const regex1 = /data\s*[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ-]*\s*[:=]?\s*/i;
@@ -215,6 +221,10 @@ function parseReportDate(line) {
 
     if (new Date() < reportDate) {
       throw 'ReportInTheFutureException';
+    }
+
+    if (Date.parse(reportDate) < Date.parse(season.startDate)) {
+      throw 'ReportBeforeSeasonStartException';
     }
   }
 
