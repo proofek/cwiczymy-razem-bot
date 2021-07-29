@@ -1,6 +1,6 @@
 module.exports = (db, message, args) => {
 
-  if (!message.member.roles.cache.some(role => role.name === 'MODERATORZY')) {
+  if (!message.member.roles.cache.some(role => role.name.includes('Moderator'))) {
     return message.reply(`Tylko moderatorzy mogą zarządzać sezonami gry!`)
   }
 
